@@ -1,14 +1,14 @@
 import mysql from 'mysql2';
-
-import dotenv from 'dotenv'
-dotenv.config()
+ 
 
 const pool = mysql.createPool({
-  host: process.env.MYSQL_HOST,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PASSWORD,
-  database: process.env.MYSQL_DATABASE
+  host: '127.0.0.1',
+  user: 'root',
+  password: 'ADHAYA_TECK_1!',
+  database: 'magasin-esi',
+   port : 3306 
 }).promise()
+
 
   async function getUsers() {
     const [results] = await pool.query("select * from users" ) 
@@ -17,7 +17,7 @@ const pool = mysql.createPool({
 
   async function getUser(id) {
     const [results] = await pool.query(`
-    select * from users where userId =? 
+    select * from users where userId =? ;
     `,[id])  // don't use ${ id } in the query, it's not safe || lead to sql injection 
     return results[0]
   } 
@@ -45,7 +45,7 @@ const pool = mysql.createPool({
   }
   
 
-  export default {
+  export {
     getUsers,
     getUser,
     createUser,

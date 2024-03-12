@@ -1,15 +1,23 @@
-import React , {useEffect,useState} from 'react'
-
+import React, { useEffect, useState } from 'react';
 
 export const App = () => {
-  const [backendData, setBackendData] = useState([{}])
+  const [backendData, setBackendData] = useState(null);
+  
   useEffect(() => {
     fetch('/api')
- .then(res => res.json())
- .then(data => setBackendData(data))
-  }, [])
+      .then(res => res.json())
+      .then(data => setBackendData(data));
+  }, []);
+  
   return (
-   <h1>hello</h1>
-  )
-}
-export default App
+    <div>
+      {backendData ? (
+        <p>{backendData.name}</p>
+      ) : (
+        <h1>Loading ...</h1>
+      )}
+    </div>
+  );
+};
+
+export default App;
