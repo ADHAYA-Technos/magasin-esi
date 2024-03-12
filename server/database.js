@@ -43,6 +43,27 @@ const pool = mysql.createPool({
     `, [id]) 
     return results
   }
+
+  //querry takes userId as parameter and returns the roles of the user 
+  async function fetchRoles(userId) {
+    const [results] = await pool.query( `SELECT Roles.roleId, Roles.role
+    FROM UsersRoles
+    JOIN Roles ON UsersRoles.roleId = Roles.roleId
+    WHERE UsersRoles.userId = ?`,
+   [userId], ) 
+    return results
+  }
+
+  //querry takes roleId as parameter and returns the permissions of the role
+  async function fetchPermissions(roleId) {
+    const [results] = await pool.query(`
+      SELECT Permissions.permission
+      FROM RolesPermissions
+      JOIN Permissions ON RolesPermissions.permissionId = Permissions.permissionId
+      WHERE RolesPermissions.roleId = ?
+    `, [roleId]);
+    return results.map(result => result.permission);
+  }
   
 
   export {
@@ -50,5 +71,7 @@ const pool = mysql.createPool({
     getUser,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    fetchRoles,
+    fetchPermissions
   }

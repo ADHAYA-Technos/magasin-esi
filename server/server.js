@@ -1,20 +1,34 @@
 import express from "express";
-import {  getUsers, getUser,createUser,updateUser,deleteUser} from "./database.js";
+import {  getUsers, getUser,createUser,updateUser,deleteUser ,fetchRoles,fetchPermissions} from "./database.js";
 const app = express()
 const port = 5000
 app.set("view engine", "ejs")
 app.use(express.static("public"))
  
 
+//fetch roles then permissions
 app.get('/api', async (req, res) => {
   try {
-    const user = await getUser(3);
-     res.json(user);
+    const userId = 3; // Replace with the actual user ID
+    const userRoles = await fetchRoles(userId);
+    const rolesWithPermissions = [];
+
+  
+    for (const role of userRoles) {
+      const permissions = await fetchPermissions(role.roleId);
+      rolesWithPermissions.push({
+        roleId: role.roleId,
+        role: role.role,
+        permissions: permissions
+      });
+    }
+
+    res.json(rolesWithPermissions);
   } catch (error) {
-    console.error("Error fetching user:", error);
+    console.error("Error fetching user roles and permissions:", error);
+    res.status(500).json({ error: 'Internal server error' });
   }
- 
-}) 
+});
 
 
 app.listen(port, () => {

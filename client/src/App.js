@@ -1,23 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { Sidebar, Menu, MenuItem, SubMenu } from 'react-pro-sidebar';
 
 export const App = () => {
-  const [backendData, setBackendData] = useState(null);
-  
-  useEffect(() => {
-    fetch('/api')
-      .then(res => res.json())
-      .then(data => setBackendData(data));
-  }, []);
-  
+
   return (
-    <div>
-      {backendData ? (
-        <p>{backendData.name}</p>
-      ) : (
-        <h1>Loading ...</h1>
-      )}
-    </div>
+<h1></h1>
+
   );
 };
-
 export default App;
