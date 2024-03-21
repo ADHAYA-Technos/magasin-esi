@@ -17,7 +17,10 @@ export const Admin = () => {
 
   return (
     <Sidebar>
-    <Menu>
+      
+      
+      
+      <Menu>
       {rolesWithPermissions.map(role => 
       role.permissions.map(permissions => (
         <SubMenu key={permissions} label={permissions}></SubMenu>
@@ -30,4 +33,4 @@ export const Admin = () => {
 
   )
 }
-export default Admin 
+export default Admin ;

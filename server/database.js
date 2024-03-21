@@ -64,7 +64,16 @@ const pool = mysql.createPool({
     `, [roleId]);
     return results.map(result => result.permission);
   }
-  
+   //querry takes permissionId as parameter and returns the functions of the permission
+   async function fetchFunctions(permissionId) {
+    const [results] = await pool.query(`
+      SELECT Functions.functionName
+      FROM Permissions
+      JOIN Functions ON Permissions.permissionId = Functions.permissionId
+      WHERE permissionId = ?
+    `, [permissionId]);
+    return results.map(result => result.permission);
+  }
 
   export {
     getUsers,
@@ -73,5 +82,6 @@ const pool = mysql.createPool({
     updateUser,
     deleteUser,
     fetchRoles,
-    fetchPermissions
+    fetchPermissions,
+    fetchFunctions
   }
