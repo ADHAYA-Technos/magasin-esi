@@ -7,7 +7,7 @@ const pool = mysql.createPool({
   password: 'ADHAYA_TECK_1!',
   database: 'magasin-esi',
    port : 3306 
-}).promise()
+}).promise() ;
 
 
   async function getUsers() {
@@ -24,12 +24,32 @@ const pool = mysql.createPool({
 
 
   async function createUser(user) {
-    const [results] = await pool.query(`
-    insert into users (name, email) values (?, ?)
-    `, [user.name, user.email]) 
-    return results
-  }
-  
+    try {
+        const [results] = await pool.query(`
+            INSERT INTO users (name, email, password) VALUES (?, ?, ?)
+        `, [user.username, user.email, user.password]);
+
+        if (results.affectedRows === 1) {
+            // User successfully registered
+            return true;
+        } else {
+            // User registration failed
+            return false;
+        }
+    } catch (error) {
+        // Check if the error is due to a duplicate entry for the email field
+        if (error.code === 'ER_DUP_ENTRY') {
+            console.error('User already registered:', error);
+            return 'duplicate';
+        } else {
+            // Handle any other errors that occur during the insertion process
+            console.error('Error creating user:', error);
+            return false;
+        }
+    }
+}
+
+
   async function updateUser(id, user) {
     const [results] = await pool.query(`
     update users set name = ?, email = ? where userId = ?
@@ -73,8 +93,23 @@ const pool = mysql.createPool({
       WHERE permissionId = ?
     `, [permissionId]);
     return results.map(result => result.permission);
+  
   }
-
+  async function loginUser(username, password) {
+    try {
+      const [results] = await pool.query('SELECT * FROM users WHERE email = ? AND password = ?', [username, password]);
+      if (results.length > 0) {
+        const isAdmin = results[0].isAdmin;
+        return isAdmin;
+      } else {
+        return null;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      throw error; 
+    }
+  }
+  
   export {
     getUsers,
     getUser,
@@ -83,5 +118,6 @@ const pool = mysql.createPool({
     deleteUser,
     fetchRoles,
     fetchPermissions,
-    fetchFunctions
-  }
+    fetchFunctions,
+    loginUser
+  } ;

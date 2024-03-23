@@ -4,7 +4,7 @@ type Props = {};
 
 const AlertPage = (props: Props) => {
   return (
-    <div>AlertPage</div>
+    <div className="text-3xl font-bold underline">AlertPage</div>
   );
 };
 

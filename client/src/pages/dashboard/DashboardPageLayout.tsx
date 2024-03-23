@@ -1,11 +1,10 @@
- import React from 'react'
- 
- type Props = {}
- 
- const DashboardPageLayout = (props: Props) => {
-   return (
-     <div>DashboardPageLayout</div>
-   )
- }
- 
- export default DashboardPageLayout
+import React from "react";
+import { Outlet } from "react-router-dom";
+
+const DashboardPageLayout = () => {
+  return (
+    <><Outlet /></>
+  );
+};
+
+export default DashboardPageLayout;
