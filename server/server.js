@@ -1,11 +1,53 @@
 import express from "express";
 import nodemailer from 'nodemailer';
+import exphbs from 'express-handlebars';
+import router from './routes/user.js';
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
 const app = express()
 const port = 5000
-app.set("view engine", "ejs")
+
+app.use(express.urlencoded({extended: true}));
+const handlebars = exphbs.create({ extname: '.hbs',});
+app.engine('.hbs', handlebars.engine);
+app.set('view engine', '.hbs');
 app.use(express.static("public")) 
 app.use(express.json());
+import path from 'path';
+ 
+
+// Routes
+router.get('/accounts/users', (req, res) => {
+  // Render and send the home page HTML
+  res.render('home');
+});
+
+router.get('/adduser', (req, res) => {
+  // Render and send the add user page HTML
+  res.render('add-user');
+});
+
+router.get('/edituser/:id', (req, res) => {
+  // Render and send the edit user page HTML
+  res.render('edit-user');
+});
+// Routes
+router.get('/', (req, res) => {
+  // Render and send the home page HTML
+  res.render('home');
+});
+
+router.get('/adduser', (req, res) => {
+  // Render and send the add user page HTML
+  res.render('add-user');
+});
+
+router.get('/edituser/:id', (req, res) => {
+  // Render and send the edit user page HTML
+  res.render('edit-user');
+});
+
+app.use('/', router);
+
 
 // Create a nodemailer transporter
 /*const transporter = nodemailer.createTransport({

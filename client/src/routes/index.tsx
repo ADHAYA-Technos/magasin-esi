@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { Route } from "react-router-dom";
 import PageWrapper from "../components/layout/PageWrapper.tsx";
-import appRoutes from "./appRoutes.tsx";
+import adminRoutes from "./appRoutes.tsx";
 import { RouteType } from "./config";
 import React from "react";
 
@@ -34,4 +34,4 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
   ));
 };
 
-export const routes: ReactNode = generateRoute(appRoutes);
+export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);

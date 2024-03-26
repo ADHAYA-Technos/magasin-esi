@@ -5,7 +5,8 @@ import { Provider } from 'react-redux';
 import App from './App.tsx';
 import { store } from './redux/store.ts';
 import reportWebVitals from './reportWebVitals';
-
+ import './index.css';
+import LoginSignUp from './pages/LoginSignUp/LoginSignUp.tsx';
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -13,6 +14,7 @@ root.render(
   <React.StrictMode>
     <Provider store={store}>
       <CssBaseline />
+      
       <App />
     </Provider>
   </React.StrictMode>
