@@ -1,6 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout.tsx";
-import { ADMINROUTES } from "./routes/index.tsx";
+import { ASAROUTES } from "./routes/index.tsx";
 import React from "react";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
@@ -14,7 +14,7 @@ function App() {
       
         <Route path="/login" element={<LoginSignUp />}/>
        <Route path="/" element={<MainLayout />}>
-          {ADMINROUTES}
+          {ASAROUTES}
         </Route>
        
       </Routes>

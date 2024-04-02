@@ -2,12 +2,15 @@ import { Avatar, Drawer, List, Stack, Toolbar } from "@mui/material";
 
 import colorConfigs from "../../configs/colorConfigs";
 import sizeConfigs from "../../configs/sizeConfigs";
-import appRoutes from "../../routes/appRoutes.tsx";
+import asaRoutes from "../../routes/asaRoutes.tsx";
 import SidebarItem from "./SidebarItem.tsx";
 import SidebarItemCollapse from "./SidebarItemCollapse.tsx";
 import React from "react";
 import assets from "../../assets/";
-const Sidebar = () => {
+import { RouteType } from "../../routes/config.ts";
+
+type Props = {}
+const Sidebar = (props: RouteType[]) => {
   return (
     <Drawer
       variant="permanent"
@@ -33,7 +36,7 @@ const Sidebar = () => {
             <Avatar src={assets.image.logo} />
           </Stack>
         </Toolbar>
-        {appRoutes.map((route, index) => (
+        {asaRoutes.map((route, index) => (
           route.sidebarProps ? (
             route.child ? (
               <SidebarItemCollapse item={route} key={index} />

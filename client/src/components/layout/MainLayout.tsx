@@ -5,8 +5,9 @@ import sizeConfigs from "../../configs/sizeConfigs";
 import Sidebar from "../common/Sidebar.tsx";
 import Topbar from "../common/Topbar.tsx";
 import React from "react";
-
-const MainLayout = () => {
+import { ReactJSXElement } from "@emotion/react/types/jsx-namespace";
+type Props = {}
+const MainLayout = (props:Props  ) => {
   return (
     <Box sx={{ display: "flex" }}>
       <Topbar />
