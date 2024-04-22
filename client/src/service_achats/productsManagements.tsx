@@ -192,4 +192,4 @@ const ProductManagement = () => {
   );
 };
 
-export default ProductManagement
+export default ProductManagement;

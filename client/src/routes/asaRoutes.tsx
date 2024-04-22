@@ -110,7 +110,6 @@ export const serviceAchatsRoutes: RouteType[] = [
         displayText: "BCE Management",
         icon: <ReceiptIcon />
       },
- 
     },
     {
       path: "/profile",

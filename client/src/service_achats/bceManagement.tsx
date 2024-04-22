@@ -171,5 +171,3 @@ const BceManagement: React.FC = () => {
 };
 
 export default BceManagement;
-
-
