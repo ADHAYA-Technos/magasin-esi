@@ -39,9 +39,9 @@ const LoginSignUp = (props: Props) => {
           const isAdmin = response.data.isAdmin;
           if (isAdmin) {
             // Redirect to admin dashboard
-            window.location.href = '/MainLayout';
-          } else {
             window.location.href = '/';
+          } else {
+            window.location.href = '/MainLayout';
           }
         } catch (error) {
           console.error('Login failed:', error);

@@ -1,5 +1,5 @@
 import React from 'react';
-
+ 
 type Props = {};
 
 const AlertPage = (props: Props) => {

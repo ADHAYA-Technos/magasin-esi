@@ -8,21 +8,23 @@ import AnalyticsPage from "../pages/dashboard/AnalyticsPage.tsx";
 import SaasPage from "../pages/dashboard/SaasPage.tsx";
 import AccountsManagementLayout from "../admin/AccountsManagementLayout.tsx";
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import AppsOutlinedIcon from '@mui/icons-material/AppsOutlined';
+import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
-import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AlertPage from "../pages/component/AlertPage.tsx";
- 
-import InstallationPage from "../pages/installation/InstallationPage.tsx";
+import AccountTreeIcon from '@mui/icons-material/AccountTree';
+import PersonIcon from '@mui/icons-material/Person';
+import UserManagement from "../admin/UsersManagement.tsx"
 import DocumentationPage from "../pages/documentation/DocumentationPage.tsx";
 import React from "react";
 import StructureManagement from "../admin/StructureManagement.tsx";
 import RolesManagement from "../admin/RolesManagement.tsx";
-import { Profile } from "../profile/Profile.tsx";
- 
+import { Profile } from "../pages/profile/Profile.tsx";
+import AccountsStatus from "../admin/AccountsStatus.tsx";
 
-const appRoutes: RouteType[] = [
+
+const adminRoutes: RouteType[] = [
   {
     index: true,
     element: <HomePage />,
@@ -30,7 +32,7 @@ const appRoutes: RouteType[] = [
   },
 
   {
-    path: "/dashboard",
+    path: "/dashboard", //MENU ITEM 
     element: <DashboardPageLayout />,
     state: "dashboard",
     sidebarProps: {
@@ -40,7 +42,7 @@ const appRoutes: RouteType[] = [
     child: [
       {
         index: true,
-        element: <DashboardIndex />,
+        element: <DashboardIndex />,  //SUB Menu
         state: "dashboard.index"
       },
       {
@@ -75,9 +77,25 @@ const appRoutes: RouteType[] = [
     state: "accounts",
     sidebarProps: {
       displayText: "Accounts Management",
-      icon: <AppsOutlinedIcon />
+      icon: <ManageAccountsIcon />
     },
     child: [
+      {
+        path: "/accounts/users",
+        element: <UserManagement />,
+        state: "accounts.users",
+        sidebarProps: {
+          displayText: "Users Management"
+        },
+      },
+      {
+        path: "/accounts/status",
+        element: <AccountsStatus />,
+        state: "accounts.status",
+        sidebarProps: {
+          displayText: "Account Status"
+        },
+      },
       {
         path: "/accounts/alert",
         element: <AlertPage />,
@@ -85,15 +103,8 @@ const appRoutes: RouteType[] = [
         sidebarProps: {
           displayText: "Notifications"
         },
-      },
-      {
-        path: "/accounts/status",
-        element: <AlertPage />,
-        state: "accounts.status",
-        sidebarProps: {
-          displayText: "Account Status"
-        },
       }
+      
      
     ]
   },
@@ -103,7 +114,7 @@ const appRoutes: RouteType[] = [
     state: "structure",
     sidebarProps: {
       displayText: "Structures",
-      icon: <ArticleOutlinedIcon />
+      icon: <AccountTreeIcon />
     }
   },
   {
@@ -112,7 +123,7 @@ const appRoutes: RouteType[] = [
     state: "roles",
     sidebarProps: {
       displayText: "Roles Management",
-      icon: <ArticleOutlinedIcon />
+      icon: <AccessibilityIcon />
     }
   },
   {
@@ -121,7 +132,7 @@ const appRoutes: RouteType[] = [
     state: "profile",
     sidebarProps: {
       displayText: "Profile Settings",
-      icon: <ArticleOutlinedIcon />
+      icon: <PersonIcon />
     }
   },
   {
@@ -144,4 +155,4 @@ const appRoutes: RouteType[] = [
   }
 ];
 
-export default appRoutes;
+export default adminRoutes ;

@@ -8,6 +8,9 @@
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.12",
     "@mui/material": "^5.15.12",
+    "@mui/styles": "^5.15.14",
+    "@mui/x-data-grid": "^7.1.0",
+    "@mui/x-data-grid-premium": "^7.1.0",
     "@reduxjs/toolkit": "^2.2.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
@@ -17,6 +20,10 @@
     "@types/react": "^18.2.67",
     "@types/react-dom": "^18.2.22",
     "axios": "^1.6.8",
+    "bootstrap": "^5.3.3",
+    "file-saver": "^2.0.5",
+    "papaparse": "^5.4.1",
+    "postcss-cli": "^11.0.0",
     "react": "^18.2.0",
     "react-axios": "^2.0.6",
     "react-dom": "^18.2.0",
@@ -30,7 +37,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build:css": "postcss src/style/tailwindcss.css -o src/style/main.css "
   },
   "eslintConfig": {
     "extends": [
@@ -51,7 +59,9 @@
     ]
   },
   "devDependencies": {
+    "autoprefixer": "^10.4.19",
     "file-loader": "^6.2.0",
+    "postcss": "^8.4.38",
     "react-router-dom": "^6.22.3",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.4.3"

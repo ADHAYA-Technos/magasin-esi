@@ -10,5 +10,6 @@ const assets ={
         person : person_icon
 
     }
+    
 }
 export default assets;
