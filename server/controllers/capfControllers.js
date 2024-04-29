@@ -20,7 +20,7 @@ export const fetchChapitres = (callback) => {
     });
 };
 export const fetchArticlesByChapitre = (chapitreId, callback) => {
-    connection.query('SELECT articleId, designation FROM Articles WHERE chapitreId = ?', [chapitreId], (error, results) => {
+    connection.query('SELECT articleId, designation ,code FROM Articles WHERE chapitreId = ?', [chapitreId], (error, results) => {
         if (!error) {
             callback(null, results); 
         } else {
@@ -59,7 +59,7 @@ export const fetchProductsByArticle = (articleId, callback) => {
 // Function to create a new bon
 export const createBon = (chapitreId, articleId, fournisseurId,type,dateCreation) => {
     return new Promise((resolve, reject) => {
-      connection.query('INSERT INTO Bon (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)',
+      connection.query('INSERT INTO chapitres (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)',
         [type, chapitreId, articleId, fournisseurId,dateCreation],
         (error, results) => {
           if (error) {
@@ -71,6 +71,9 @@ export const createBon = (chapitreId, articleId, fournisseurId,type,dateCreation
     });
   };
   
+  
+
+
   // Function to insert rows into Commande table
   export const createCommandeRows = (  products) => {
     if (!Array.isArray(products) || products.length === 0) {
@@ -294,5 +297,139 @@ export const fetchCommandesByBon = (bonId, callback) => {
   };
   
   
+// Function to create a new chapitre
+export const createChapitre = (libelle,numChapitre) => {
+  return new Promise((resolve, reject) => {
+    connection.query('INSERT INTO chapitres (libelle,numChapitre) VALUES (?, ?)',
+      [libelle,numChapitre],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created chapitre
+        }
+      });
+  });
+};
+//UPDATE CHAPITRE
+export const updateChapitre = (chapitreId, libelle, numChapitre) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'UPDATE Chapitres SET libelle = ?, numChapitre = ? WHERE chapitreId = ?',
+      [libelle, numChapitre, chapitreId],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results); // Resolve with the results of the update
+        }
+      }
+    );
+  });
+};
+//DELETE CHAPITRE
+export const deleteChapitre = (selectedId) => {
+  return new Promise((resolve, reject) => {
+    selectedId.map((id) => {
+      connection.query('DELETE FROM Chapitres WHERE chapitreId = ?', [id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+    
+  });
+};
 
-export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseursByArticle,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon};
+//UPDATE Article
+export const updateArticle = (articleId, designation, code) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'UPDATE Articles SET designation = ?, code = ? WHERE articleId = ?',
+      [designation, code, articleId],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the results of the update
+        }
+      }
+    );
+  });
+};
+
+// Function to create a new chapitre
+export const createArticle = ( chapitreId,designation,code) => {
+  return new Promise((resolve, reject) => {
+    connection.query('INSERT INTO Articles (chapitreId,designation,code) VALUES (?, ?,?)',
+      [chapitreId,designation,code],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created chapitre
+        }
+      });
+  });
+};
+
+export const deleteArticle = (selectedId) => {
+  return new Promise((resolve, reject) => {
+    selectedId.map((id) => {
+      connection.query('DELETE FROM Articles WHERE articleId = ?', [id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+    
+  });
+};
+
+
+// Function to add a new product
+export const addProduct = (newProduct) => {
+  return new Promise((resolve, reject) => {
+    connection.query('INSERT INTO Products SET ?', newProduct, (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        const insertedId = result.insertId;
+        const addedProduct = { ...newProduct, productId: insertedId };
+        resolve(addedProduct);
+      }
+    });
+  });
+};
+
+// Function to update an existing product
+export const updateProduct = (productId, updatedProductData) => {
+  return new Promise((resolve, reject) => {
+    connection.query('UPDATE Products SET ? WHERE productId = ?', [updatedProductData, productId], (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        const updatedProduct = { ...updatedProductData, productId };
+        resolve(updatedProduct);
+      }
+    });
+  });
+};
+
+// Function to delete a product
+export const deleteProduct = (productId) => {
+  return new Promise((resolve, reject) => {
+    connection.query('DELETE FROM Products WHERE productId = ?', productId, (error) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+};
+export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseursByArticle,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct};

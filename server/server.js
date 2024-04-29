@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer';
 import exphbs from 'express-handlebars';
 import router from './routes/user.js';
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre,fetchFournisseursByArticle, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre,fetchFournisseursByArticle, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
 
@@ -213,6 +213,8 @@ app.post('/api/createBon', async (req, res) => {
   }
 });
 
+
+
 // Route to insert rows into Commande table
 app.post('/api/createCommandeRows', async (req, res) => {
   const products = req.body;
@@ -284,6 +286,129 @@ app.put('/api/bon/:bonId', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+//create new chapitre
+
+app.post('/api/createChapitre', async (req, res) => {
+  
+  const { libelle,numChapitre } = req.body;
+  
+  try {
+    const chapitre = await createChapitre(libelle, numChapitre);
+    res.status(201).json({ chapitre });
+  } catch (error) {
+    console.error('Error creating chapitre:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/editChapitre', async (req, res) => {
+  const chapitreId = req.body.chapitreId;
+  const libelle= req.body.libelle;
+  const numChapitre= req.body.numChapitre;
+
+
+  try {
+    await updateChapitre(chapitreId, libelle, numChapitre); 
+    res.status(200).json({ message: 'Chapitre updated successfully' });
+  } catch (error) {
+    console.error('Error updating Chapitre:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//deleteChapitres
+app.put('/api/deleteChapitre', async (req, res) => {
+  const selectedId = req.body.selectedId; // Access data from request body
+
+  try {
+    await deleteChapitre(selectedId); 
+    res.status(200).json({ message: 'Chapitres deleted successfully' });
+  } catch (error) {
+    console.error('Error updating Chapitre:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/createArticle', async (req, res) => {
+  
+  const { chapitreId,designation,code } = req.body;
+  
+  try {
+    const article = await createArticle( chapitreId,designation,code);
+    res.status(201).json({ article });
+  } catch (error) {
+    console.error('Error creating Article:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/editArticle', async (req, res) => {
+  const articleId = req.body.articleId;
+  const designation= req.body.designation;
+  const code= req.body.code;
+
+
+  try {
+    await updateArticle(articleId, designation, code); 
+    res.status(200).json({ message: 'Article updated successfully' });
+  } catch (error) {
+    console.error('Error updating Article:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+//deleteChapitres
+app.put('/api/deleteArticle', async (req, res) => {
+  const selectedId = req.body.selectedId; // Access data from request body
+
+  try {
+    await deleteArticle(selectedId); 
+    res.status(200).json({ message: 'Articles deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting Article:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.post('/api/products', async (req, res) => {
+  try {
+    const newProduct = req.body;
+    const addedProduct = await addProduct(newProduct);
+    res.status(201).json(addedProduct);
+  } catch (error) {
+    console.error('Error adding product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add endpoint for updating a product
+app.put('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    const updatedProductData = req.body;
+    const updatedProduct = await updateProduct(productId, updatedProductData);
+    res.status(200).json(updatedProduct);
+  } catch (error) {
+    console.error('Error updating product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Add endpoint for deleting a product
+app.delete('/api/products/:id', async (req, res) => {
+  try {
+    const productId = req.params.id;
+    await deleteProduct(productId);
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting product:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
 app.listen(port, () => {
   console.log(`Example app listening on ports ${port}`)
 })

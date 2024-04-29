@@ -1,4 +1,4 @@
-import logo from './images/logo.png';
+import logo from './images/logo.svg';
 import email_icon from './images/email.png';
 import password_icon from './images/password.png';
 import person_icon from './images/person.png';

@@ -6,7 +6,7 @@ import DashboardIndex from "../pages/dashboard/DashboardIndex.tsx";
 import AnalyticsPage from "../pages/dashboard/AnalyticsPage.tsx";
 import SaasPage from "../pages/dashboard/SaasPage.tsx";
 import DocumentationPage from "../pages/documentation/DocumentationPage.tsx";
-import { Profile } from "../pages/profile/Profile.tsx";
+import  Profile  from "../pages/profile/Profile.tsx";
  //icons
  import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
