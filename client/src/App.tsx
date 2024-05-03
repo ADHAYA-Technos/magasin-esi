@@ -1,6 +1,8 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout.tsx";
 import { ASAROUTES } from "./routes/index.tsx";
+import { CONSOMATEUR } from "./routes/index.tsx";
+import { MAGASINIERROUTES } from "./routes/index.tsx";
 import React from "react";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
@@ -10,11 +12,15 @@ function App() {
       <Routes>
 
        
-         <Route path="/emailConfirmation" element={<EmailConfirmation />}/>
-      
+        <Route path="/emailConfirmation" element={<EmailConfirmation />}/>
+
+          
+
         <Route path="/login" element={<LoginSignUp />}/>
        <Route path="/" element={<MainLayout />}>
           {ASAROUTES}
+          {CONSOMATEUR}
+
         </Route>
        
       </Routes>

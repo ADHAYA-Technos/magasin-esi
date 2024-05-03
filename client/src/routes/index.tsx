@@ -3,6 +3,7 @@ import { Route } from "react-router-dom";
 import PageWrapper from "../components/layout/PageWrapper.tsx";
 import adminRoutes from "./appRoutes.tsx";
 import serviceAchatsRoutes from "./asaRoutes.tsx";
+import consommateurRoutes from "./consommateurRoutes.tsx";
 import magasinierRoutes from "./magasinierRoutes.tsx";
 import { RouteType } from "./config";
 import React from "react";
@@ -36,7 +37,8 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
   ));
 };
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
-//export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
+export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
+export const  CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
+export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
 
-//export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
 

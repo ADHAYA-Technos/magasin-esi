@@ -20,7 +20,7 @@ import DocumentationPage from "../pages/documentation/DocumentationPage.tsx";
 import React from "react";
 import StructureManagement from "../admin/StructureManagement.tsx";
 import RolesManagement from "../admin/RolesManagement.tsx";
-import { Profile } from "../pages/profile/Profile.tsx";
+import  Profile  from "../pages/profile/Profile.tsx";
 import AccountsStatus from "../admin/AccountsStatus.tsx";
 
 
