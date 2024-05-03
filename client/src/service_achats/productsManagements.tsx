@@ -17,6 +17,7 @@ import axios from "axios";
 type Product = {
   productId: number;
   designation: string;
+  
 };
 
 const ProductsManagement: React.FC = () => {
@@ -90,17 +91,111 @@ const ProductsManagement: React.FC = () => {
     setSelectedArticle(event.target.value as string);
   };
 
+<<<<<<< HEAD
   const handleAddProduct = () => {};
 
   const handleUpdateProduct = (id: GridRowId) => {};
 
   const handleDeleteProduct = (id: GridRowId) => {};
+=======
+  const handleDialogSubmit = async () => {
+    try { 
+      if (editedProduct){
+        console.warn(editedProduct);
+        await axios.put('/api/editProduct', {
+
+          productId : editedProduct.productId ,
+          designation: editedProduct.designation,
+         
+          
+        });
+        const updatedProducts = products.map(product =>
+          product.productId === editedProduct.productId ? editedProduct : product
+        );
+        setProducts(updatedProducts);
+        setOpenDialog(false);
+       
+      } else{
+        const response = await axios.post('/api/addProduct', {
+          articleId: articles.find(article => article.articleId === Number(selectedArticle))?.articleId,
+          designation: newProduct.designation,
+        });
+        const newProductWithId = {
+         ...newProduct,
+         productId:response.data,
+        id: response.data,
+        };
+        setProducts([...products, newProductWithId]);
+      
+      }
+      setOpenDialog(false);
+      setEditedProduct(null);
+      setNewProduct({
+        productId: 0,
+        designation: ''
+      });
+    } catch (error) {
+      console.error('Error submitting Product:', error);
+      // Handle error as needed
+    }
+  };
+
+  
+  const handleUpdateProduct = (id: GridRowId) => {
+    if(selectedRows.length === 1){
+      const selectedProduct = products.find(product => product.productId === selectedRows[0]);
+      if(selectedProduct){
+        setEditedProduct(selectedProduct);
+        setNewProduct(selectedProduct);
+        setOpenDialog(true);
+      }else{
+        alert("Please select one product ");
+      }
+  }else{
+    alert("Please select [just] one product ");
+  };
+  };
+  const handleDeleteProduct = async () => {
+    const updatedProducts = products.filter(product => !selectedRows.includes(product.productId));
+   
+    try {
+
+      const response = await axios.put('/api/deleteProduct', { selectedId: selectedRows });
+      
+      console.log(response.data.message);
+      // Handle success message as needed
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      
+      // Handle error as needed
+    }
+    
+    setProducts(updatedProducts);
+    setSelectedRows([]);
+  };
+>>>>>>> c6b1de4297cdce19a8d7cbccec53de73c3c1d24a
 
   const columns: GridColDef[] = [
     { field: "productId", headerName: "ID", width: 100 },
     { field: "designation", headerName: "Designation", width: 200 },
     { field: "quantity", headerName: "Quantity en stock", width: 250 },
   ];
+
+  const handleAddChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setNewProduct(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
+
+  const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setEditedProduct(prevState => ({
+      ...prevState,
+      [name]: value,
+    }));
+  };
 
   return (
     <div>
@@ -207,6 +302,7 @@ const ProductsManagement: React.FC = () => {
             label="Designation"
             type="text"
             name="designation"
+<<<<<<< HEAD
             value={newProduct.designation}
             onChange={(e) =>
               setNewProduct({ ...newProduct, designation: e.target.value })
@@ -222,6 +318,23 @@ const ProductsManagement: React.FC = () => {
         </DialogActions>
       </Dialog>
     </div>
+=======
+            value={editedProduct?editedProduct.designation:newProduct.designation}
+            
+            onChange={editedProduct?handleEditChange:handleAddChange}
+            fullWidth
+          />
+   
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+        <Button onClick={handleDialogSubmit} color="primary">
+          {editedProduct ? 'Save' : 'Add'}
+        </Button>
+      </DialogActions>
+    </Dialog>
+  </div>
+>>>>>>> c6b1de4297cdce19a8d7cbccec53de73c3c1d24a
   );
 };
 

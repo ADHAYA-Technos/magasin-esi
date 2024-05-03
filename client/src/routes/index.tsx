@@ -37,8 +37,14 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
   ));
 };
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
+<<<<<<< HEAD
 export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
 export const  CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
 
+=======
+export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
+
+export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
+>>>>>>> c6b1de4297cdce19a8d7cbccec53de73c3c1d24a
 

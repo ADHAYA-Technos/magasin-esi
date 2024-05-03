@@ -19,19 +19,20 @@ export const fetchChapitres = (callback) => {
         }
     });
 };
-export const fetchArticlesByChapitre = (chapitreId, callback) => {
-    connection.query('SELECT articleId, designation ,code FROM Articles WHERE chapitreId = ?', [chapitreId], (error, results) => {
-        if (!error) {
-            callback(null, results); 
-        } else {
-            callback(error); 
-        }
-    });
+export const fetchArticlesByChapitre = (chapitreIdOrNumChapitre, callback) => {
+  connection.query('SELECT A.articleId, A.designation, A.code FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
+    
+      if (!error) {
+          callback(null, results); 
+      } else {
+          callback(error); 
+      }
+  });
 };
-export const fetchFournisseursByArticle = (articleId, callback) => {
+export const fetchFournisseurs = ( callback) => {
     connection.query(
-        'SELECT * FROM Fournisseurs F INNER JOIN Fournisseur_Article FA ON F.fournisseurId = FA.fournisseurId WHERE FA.articleId = ?',
-        [articleId],
+        'SELECT * FROM Fournisseurs',
+        
         (error, results) => {
             if (!error) {
                 callback(null, results); // Send the results back as the response
@@ -59,7 +60,7 @@ export const fetchProductsByArticle = (articleId, callback) => {
 // Function to create a new bon
 export const createBon = (chapitreId, articleId, fournisseurId,type,dateCreation) => {
     return new Promise((resolve, reject) => {
-      connection.query('INSERT INTO chapitres (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)',
+      connection.query('INSERT INTO Bon (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)',
         [type, chapitreId, articleId, fournisseurId,dateCreation],
         (error, results) => {
           if (error) {
@@ -182,8 +183,8 @@ export const fetchCommandesByBon = (bonId, callback) => {
     return new Promise((resolve, reject) => {
       connection.beginTransaction((err) => {
         if (err) {
-          reject(err);
-          return;
+            reject(err);
+            return;
         }
         // Get chapitreId from Chapitres table where numChapitre matches
         connection.query(
@@ -233,6 +234,7 @@ export const fetchCommandesByBon = (bonId, callback) => {
                                 });
                               } else {
                                 const fournisseurId = results[0].fournisseurId;
+                                console.log(fournisseurId);
                                 // Update Bon entity with updated foreign key values
                                 connection.query(
                                   'UPDATE Bon SET chapitreId = ?, articleId = ?, fournisseurId = ? WHERE bonId = ?',
@@ -392,44 +394,110 @@ export const deleteArticle = (selectedId) => {
 
 
 // Function to add a new product
-export const addProduct = (newProduct) => {
+export const addProduct = (articleId, designation) => {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO Products SET ?', newProduct, (error, result) => {
+    connection.query('INSERT INTO Products (articleId,designation) values (?,?)', [articleId, designation], (error, result) => {
       if (error) {
         reject(error);
       } else {
-        const insertedId = result.insertId;
-        const addedProduct = { ...newProduct, productId: insertedId };
-        resolve(addedProduct);
+        resolve(result.insertId); // Resolve with the ID of the newly created chapitre
       }
     });
   });
 };
 
 // Function to update an existing product
-export const updateProduct = (productId, updatedProductData) => {
+export const updateProduct = (productId, designation) => {
   return new Promise((resolve, reject) => {
-    connection.query('UPDATE Products SET ? WHERE productId = ?', [updatedProductData, productId], (error) => {
+    connection.query('UPDATE Products SET designation = ? WHERE productId = ?', [designation, productId], (error, result) => {
       if (error) {
         reject(error);
       } else {
-        const updatedProduct = { ...updatedProductData, productId };
-        resolve(updatedProduct);
+        resolve(result); // Resolve with the ID of the newly created chapitre
       }
     });
   });
 };
 
 // Function to delete a product
-export const deleteProduct = (productId) => {
+export const deleteProduct = (selectedId) => {
   return new Promise((resolve, reject) => {
-    connection.query('DELETE FROM Products WHERE productId = ?', productId, (error) => {
+    selectedId.map((id) => {
+      connection.query('DELETE FROM products WHERE productId = ?', [id], (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results);
+        }
+      });
+    });
+    
+  });
+};
+
+// fetchProducts function in yourModule.js
+export const fetchProducts = (callback) => {
+  connection.query(
+    'SELECT * FROM Products ',
+    (error, results) => {
+      if (!error) {
+       
+        callback(null, results); // Send the results back as the response
+      } else {
+        callback(error); // Send the error back if there's any
+      }
+    }
+  );
+};
+
+// Function to create a new bon
+export const createBonRec = (bonId,dateCreation) => {
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('INSERT INTO BonReception (bonId,dateCreation) VALUES (?,?)',
+      [bonId,dateCreation],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+};
+
+export const createReceptionRows = (bonRecId, updatedCommandes) => {
+  if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
+  
+  const values = updatedCommandes.map(updatedCommande => [bonRecId, updatedCommande.commandeId, updatedCommande.quantity]);
+  return new Promise((resolve, reject) => {
+    const query = 'INSERT INTO LigneReception (bonRecId, commandeId, quantity) VALUES ?';
+    connection.query(query, [values], (error, results) => {
       if (error) {
         reject(error);
       } else {
-        resolve();
+        resolve(results); // Resolve with the results of the insertion
       }
     });
   });
 };
-export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseursByArticle,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct};
+
+export const fetchBonRec = (bonId) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'SELECT * FROM bonreception WHERE bonId = ?',
+      [bonId],
+      (error, results) => {
+        if (!error) {
+          resolve(results); // Resolve with the results
+        } else {
+          reject(error); // Reject with the error
+        }
+      }
+    );
+  });
+};
+
+export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows};

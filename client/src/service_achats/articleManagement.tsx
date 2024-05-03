@@ -28,7 +28,7 @@ const ArticleManagement: React.FC<Props> = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [editedArticle, setEditedArticle] = useState<Article | null>(null);
   const [newArticle, setNewArticle] = useState<Article>({
-    articleId: 0,
+    articleId:0,
     designation: '',
     code:'',
    
@@ -95,7 +95,6 @@ const ArticleManagement: React.FC<Props> = () => {
   const handleDialogSubmit = async () => {
     try {
       if (editedArticle) {
-        // If editing an existing chapitre
         await axios.put('/api/editArticle', {
 
           articleId: editedArticle.articleId,
@@ -105,19 +104,22 @@ const ArticleManagement: React.FC<Props> = () => {
         });
         const updatedArticles = articles.map(article =>
           article.articleId === editedArticle.articleId ? editedArticle : article
+         
         );
         setArticles(updatedArticles);
       } else {
-        // If creating a new chapitre
         const response = await axios.post('/api/createArticle', {
           chapitreId:selectedChapitre,
           designation: newArticle.designation,
           code : newArticle.code,
         });
+        
         const newArticleeWithId = {
          ...newArticle,
-          articleId: response.data.articleId,
-          id:response.data.articleId
+         
+         
+         articleId : response.data,
+          id : response.data,
         };
     
         setArticles([...articles, newArticleeWithId]);
@@ -144,7 +146,7 @@ const ArticleManagement: React.FC<Props> = () => {
       console.log(response.data.message);
       // Handle success message as needed
     } catch (error) {
-      console.error('Error deleting chapitre:', error);
+      console.error('Error deleting product:', error);
       // Handle error as needed
     }
     setSelectedRows([]);
