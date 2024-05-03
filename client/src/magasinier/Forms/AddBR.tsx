@@ -15,7 +15,7 @@ interface OrderRecipient {
   quantities: number[];
 }
 
-const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
+const AddBR: React.FC<Props> = ({ selectedRowIds, goBack }) => {
   const [orderRecipient, setOrderRecipient] = useState<OrderRecipient>({
     chapitre: '',
     article: '',
@@ -44,20 +44,6 @@ const formattedDate = currentDate.toISOString().split('T')[0];
         }
       })
       .catch((error) => console.log(error));
-      fetch(`/api/fournisseurs`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          alert("Fournisseur Id : " + data[0].fournisseurId + " Fournisseur Phone : 0-" + data[0].phone +" Fournisseur fax : 0-" + data[0].fax );
-          setFournisseurs(data);
-          setOrderRecipient((prevOrderRecipient) => ({
-           ...prevOrderRecipient,
-            fournisseur: data[0].fournisseurId,
-          }));
-        } else {
-          console.error("Invalid data format:", data);
-        }
-      });
   }, []);
 
   const handleChapitreChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -84,7 +70,20 @@ const formattedDate = currentDate.toISOString().split('T')[0];
       quantities: [],
     }));
 
-  
+    fetch(`/api/fournisseurs/${articleId}`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          alert("Fournisseur Id : " + data[0].fournisseurId + " Fournisseur Phone : 0-" + data[0].phone +" Fournisseur fax : 0-" + data[0].fax );
+          setFournisseurs(data);
+          setOrderRecipient((prevOrderRecipient) => ({
+           ...prevOrderRecipient,
+            fournisseur: data[0].fournisseurId,
+          }));
+        } else {
+          console.error("Invalid data format:", data);
+        }
+      });
 
     fetch(`/api/products/${articleId}`)
       .then((response) => response.json())
@@ -399,4 +398,4 @@ const handleFournisseurChange = (event: React.ChangeEvent<HTMLSelectElement>) =>
   );
 };
 
-export default AddBCE;
+export default AddBR;

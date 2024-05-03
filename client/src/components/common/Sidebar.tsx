@@ -3,6 +3,7 @@ import { Avatar, Drawer, List, Stack, Toolbar,ListItem, ListItemText, Typography
 import colorConfigs from "../../configs/colorConfigs";
 import sizeConfigs from "../../configs/sizeConfigs";
 import asaRoutes from "../../routes/asaRoutes.tsx";
+import magasinierRoutes from "../../routes/magasinierRoutes.tsx";
 import SidebarItem from "./SidebarItem.tsx";
 import SidebarItemCollapse from "./SidebarItemCollapse.tsx";
 import React from "react";
@@ -41,7 +42,8 @@ const Sidebar = (props: RouteType[]) => {
         </Stack>
       </Toolbar>
       {/* Sidebar items */}
-      {asaRoutes.map((route, index) => (
+     
+      {magasinierRoutes.map((route, index) => (
         route.sidebarProps ? (
           route.child ? (
             <SidebarItemCollapse item={route} key={index} />
@@ -51,6 +53,7 @@ const Sidebar = (props: RouteType[]) => {
         ) : null
       ))}
     </List>
+    
     {/* ESI-SMART-STORE text */}
   <Typography variant="body2" align="center" sx={{ marginBottom: "10px", color: grey }}>
     ©   ESI-SMART-STORE
