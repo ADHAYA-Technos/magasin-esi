@@ -1,0 +1,61 @@
+.notification-button-wrapper {
+  position: relative;
+}
+
+.notification-button {
+  color: #000; /* Set font color to black */
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.notification-box {
+  position: absolute;
+  top: calc(100% + 10px); /* Adjust the distance from the button */
+  left: 50%; /* Center the box horizontally */
+  transform: translateX(-50%); /* Center the box horizontally */
+  background-color: #fff;
+  border: 1px solid #ccc; /* Changed border color for better visibility */
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px; /* Reduced padding for a more compact look */
+  z-index: 1000;
+  width: 280px; /* Set a fixed width for the box */
+  color: #000; /* Set text color to black */
+}
+
+.notification-box h3 {
+  margin-bottom: 10px;
+  color: #000; /* Set heading color to black */
+}
+
+.notification-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ccc; /* Set border color to a lighter shade */
+  padding-bottom: 10px; /* Add padding to separate items */
+}
+
+.notification-item img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.notification-text {
+  flex: 1;
+}
+
+.notification-text strong {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  color: #000; /* Set text color to black */
+}
+
+.notification-text p {
+  margin: 0;
+  color: #000; /* Set text color to black */
+}

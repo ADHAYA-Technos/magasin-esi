@@ -50,7 +50,7 @@ const ChapitresManagement: React.FC<Props> = () => {
   const columns: GridColDef[] = [
     { field: 'chapitreId', headerName: 'ID', width: 70 },
     { field: 'numChapitre', headerName: 'N° Chapitre', width: 130 },
-    { field: 'libelle', headerName: 'Libellée', width: 130 },
+    { field: 'libelle', headerName: 'Libellée', width:450 },
   ];
 
   const handleSelectionChange = (newSelection: GridRowId[]) => {

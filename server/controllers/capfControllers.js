@@ -21,31 +21,28 @@ export const fetchChapitres = (callback) => {
     }
   );
 };
-export const fetchArticlesByChapitre = (chapitreId, callback) => {
-  connection.query(
-    "SELECT articleId, designation ,code FROM Articles WHERE chapitreId = ?",
-    [chapitreId],
-    (error, results) => {
+export const fetchArticlesByChapitre = (chapitreIdOrNumChapitre, callback) => {
+  connection.query('SELECT A.articleId, A.designation, A.code FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
+    
       if (!error) {
-        callback(null, results);
+          callback(null, results); 
       } else {
-        callback(error);
+          callback(error); 
       }
-    }
-  );
+  });
 };
-export const fetchFournisseursByArticle = (articleId, callback) => {
-  connection.query(
-    "SELECT * FROM Fournisseurs F INNER JOIN Fournisseur_Article FA ON F.fournisseurId = FA.fournisseurId WHERE FA.articleId = ?",
-    [articleId],
-    (error, results) => {
-      if (!error) {
-        callback(null, results); // Send the results back as the response
-      } else {
-        callback(error); // Send the error back if there's any
-      }
-    }
-  );
+export const fetchFournisseurs = ( callback) => {
+    connection.query(
+        'SELECT * FROM Fournisseurs',
+        
+        (error, results) => {
+            if (!error) {
+                callback(null, results); // Send the results back as the response
+            } else {
+                callback(error); // Send the error back if there's any
+            }
+        }
+    );
 };
 export const fetchProductsByArticle = (articleId, callback) => {
   connection.query(
@@ -62,27 +59,21 @@ export const fetchProductsByArticle = (articleId, callback) => {
 };
 
 // Function to create a new bon
-export const createBon = (
-  chapitreId,
-  articleId,
-  fournisseurId,
-  type,
-  dateCreation
-) => {
-  return new Promise((resolve, reject) => {
-    connection.query(
-      "INSERT INTO chapitres (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)",
-      [type, chapitreId, articleId, fournisseurId, dateCreation],
-      (error, results) => {
-        if (error) {
-          reject(error);
-        } else {
-          resolve(results.insertId); // Resolve with the ID of the newly created bon
-        }
-      }
-    );
-  });
-};
+export const createBon = (chapitreId, articleId, fournisseurId,type,dateCreation) => {
+    return new Promise((resolve, reject) => {
+      connection.query('INSERT INTO Bon (type, chapitreId, articleId, fournisseurId,dateCreation) VALUES (?, ?, ?, ?,?)',
+        [type, chapitreId, articleId, fournisseurId,dateCreation],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.insertId); // Resolve with the ID of the newly created bon
+          }
+        });
+    });
+  };
+  
+  
 
 // Function to insert rows into Commande table
 export const createCommandeRows = (products) => {
@@ -177,6 +168,56 @@ export const deleteBons = (bonIds) => {
                 });
               } else {
                 // If commands are deleted successfully, proceed to delete Bons
+                connection.query('DELETE FROM Bon WHERE bonId IN (?)', [bonIds], (error, results) => {
+                  if (error) {
+                    connection.rollback(() => {
+                      reject(error);
+                    });
+                  } else {
+                    // Commit the transaction if everything is successful
+                    connection.commit((error) => {
+                      if (error) {
+                        connection.rollback(() => {
+                          reject(error);
+                        });
+                      } else {
+                        resolve(); // Resolve without any data (successful deletion)
+                      }
+                    });
+                  }
+                });
+              }
+            });
+          }
+        });
+      }
+    });
+  };
+  
+  export const updateBon = (bonId, updatedBonData, updatedCommandesData) => {
+    return new Promise((resolve, reject) => {
+      connection.beginTransaction((err) => {
+        if (err) {
+            reject(err);
+            return;
+        }
+        // Get chapitreId from Chapitres table where numChapitre matches
+        connection.query(
+          'SELECT chapitreId FROM Chapitres WHERE numChapitre = ?',
+          [updatedBonData.numChapitre],
+          (error, results) => {
+            if (error) {
+              connection.rollback(() => {
+                reject(error);
+              });
+            } else {
+              if (results.length === 0) {
+                connection.rollback(() => {
+                  reject(new Error('Chapitre not found'));
+                });
+              } else {
+                const chapitreId = results[0].chapitreId;
+                // Get articleId from Articles table where designation matches
                 connection.query(
                   "DELETE FROM Bon WHERE bonId IN (?)",
                   [bonIds],
@@ -186,16 +227,81 @@ export const deleteBons = (bonIds) => {
                         reject(error);
                       });
                     } else {
-                      // Commit the transaction if everything is successful
-                      connection.commit((error) => {
-                        if (error) {
-                          connection.rollback(() => {
-                            reject(error);
-                          });
-                        } else {
-                          resolve(); // Resolve without any data (successful deletion)
-                        }
-                      });
+                      if (results.length === 0) {
+                        connection.rollback(() => {
+                          reject(new Error('Article not found'));
+                        });
+                      } else {
+                        const articleId = results[0].articleId;
+                        // Get fournisseurId from Fournisseurs table where raisonSociale matches
+                        connection.query(
+                          'SELECT fournisseurId FROM Fournisseurs WHERE raisonSociale = ?',
+                          [updatedBonData.raisonSociale],
+                          (error, results) => {
+                            if (error) {
+                              connection.rollback(() => {
+                                reject(error);
+                              });
+                            } else {
+                              if (results.length === 0) {
+                                connection.rollback(() => {
+                                  reject(new Error('Fournisseur not found'));
+                                });
+                              } else {
+                                const fournisseurId = results[0].fournisseurId;
+                                console.log(fournisseurId);
+                                // Update Bon entity with updated foreign key values
+                                connection.query(
+                                  'UPDATE Bon SET chapitreId = ?, articleId = ?, fournisseurId = ? WHERE bonId = ?',
+                                  [chapitreId, articleId, fournisseurId, bonId],
+                                  (error, results) => {
+                                    if (error) {
+                                      connection.rollback(() => {
+                                        reject(error);
+                                      });
+                                    } else {
+                                      // Update Commande entities with updated pu and quantity
+                                      const commandsToUpdate = updatedCommandesData.map((commande) => {
+                                        return new Promise((resolve, reject) => {
+                                          connection.query(
+                                            'UPDATE Commande SET pu = ?, quantity = ? WHERE commandeId = ?',
+                                            [commande.pu, commande.quantity, commande.commandeId],
+                                            (error, results) => {
+                                              if (error) {
+                                                reject(error);
+                                              } else {
+                                                resolve();
+                                              }
+                                            }
+                                          );
+                                        });
+                                      });
+                                      // Execute all update queries
+                                      Promise.all(commandsToUpdate)
+                                        .then(() => {
+                                          connection.commit((err) => {
+                                            if (err) {
+                                              connection.rollback(() => {
+                                                reject(err);
+                                              });
+                                            } else {
+                                              resolve(results);
+                                            }
+                                          });
+                                        })
+                                        .catch((error) => {
+                                          connection.rollback(() => {
+                                            reject(error);
+                                          });
+                                        });
+                                    }
+                                  }
+                                );
+                              }
+                            }
+                          }
+                        );
+                      }
                     }
                   }
                 );
@@ -437,76 +543,110 @@ export const deleteArticle = (selectedId) => {
 };
 
 // Function to add a new product
-export const addProduct = (newProduct) => {
+export const addProduct = (articleId, designation) => {
   return new Promise((resolve, reject) => {
-    connection.query(
-      "INSERT INTO Products SET ?",
-      newProduct,
-      (error, result) => {
-        if (error) {
-          reject(error);
-        } else {
-          const insertedId = result.insertId;
-          const addedProduct = { ...newProduct, productId: insertedId };
-          resolve(addedProduct);
-        }
+    connection.query('INSERT INTO Products (articleId,designation) values (?,?)', [articleId, designation], (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result.insertId); // Resolve with the ID of the newly created chapitre
       }
     );
   });
 };
 
 // Function to update an existing product
-export const updateProduct = (productId, updatedProductData) => {
+export const updateProduct = (productId, designation) => {
   return new Promise((resolve, reject) => {
-    connection.query(
-      "UPDATE Products SET ? WHERE productId = ?",
-      [updatedProductData, productId],
-      (error) => {
-        if (error) {
-          reject(error);
-        } else {
-          const updatedProduct = { ...updatedProductData, productId };
-          resolve(updatedProduct);
-        }
+    connection.query('UPDATE Products SET designation = ? WHERE productId = ?', [designation, productId], (error, result) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(result); // Resolve with the ID of the newly created chapitre
       }
     );
   });
 };
 
 // Function to delete a product
-export const deleteProduct = (productId) => {
+export const deleteProduct = (selectedId) => {
   return new Promise((resolve, reject) => {
-    connection.query(
-      "DELETE FROM Products WHERE productId = ?",
-      productId,
-      (error) => {
+    selectedId.map((id) => {
+      connection.query('DELETE FROM products WHERE productId = ?', [id], (error, results) => {
         if (error) {
           reject(error);
         } else {
-          resolve();
+          resolve(results);
+        }
+      });
+    });
+    
+  });
+};
+
+// fetchProducts function in yourModule.js
+export const fetchProducts = (callback) => {
+  connection.query(
+    'SELECT * FROM Products ',
+    (error, results) => {
+      if (!error) {
+       
+        callback(null, results); // Send the results back as the response
+      } else {
+        callback(error); // Send the error back if there's any
+      }
+    }
+  );
+};
+
+// Function to create a new bon
+export const createBonRec = (bonId,dateCreation) => {
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('INSERT INTO BonReception (bonId,dateCreation) VALUES (?,?)',
+      [bonId,dateCreation],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+};
+
+export const createReceptionRows = (bonRecId, updatedCommandes) => {
+  if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
+  
+  const values = updatedCommandes.map(updatedCommande => [bonRecId, updatedCommande.commandeId, updatedCommande.quantity]);
+  return new Promise((resolve, reject) => {
+    const query = 'INSERT INTO LigneReception (bonRecId, commandeId, quantity) VALUES ?';
+    connection.query(query, [values], (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve(results); // Resolve with the results of the insertion
+      }
+    );
+  });
+};
+
+export const fetchBonRec = (bonId) => {
+  return new Promise((resolve, reject) => {
+    connection.query(
+      'SELECT * FROM bonreception WHERE bonId = ?',
+      [bonId],
+      (error, results) => {
+        if (!error) {
+          resolve(results); // Resolve with the results
+        } else {
+          reject(error); // Reject with the error
         }
       }
     );
   });
 };
-export default {
-  fetchChapitres,
-  fetchArticlesByChapitre,
-  fetchFournisseursByArticle,
-  fetchProductsByArticle,
-  createBon,
-  updateBon,
-  createCommandeRows,
-  fetchBonsWithDetails,
-  deleteBons,
-  fetchCommandesByBon,
-  createChapitre,
-  updateChapitre,
-  deleteChapitre,
-  updateArticle,
-  createArticle,
-  deleteArticle,
-  deleteProduct,
-  updateProduct,
-  addProduct,
-};
+
+export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows};

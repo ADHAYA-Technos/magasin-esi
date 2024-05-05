@@ -2,10 +2,18 @@ import express from "express";
 import nodemailer from 'nodemailer';
 import exphbs from 'express-handlebars';
 import router from './routes/user.js';
+import cors from "cors";
+import session from "express-session";
+import dotenv from "dotenv";
+import UserRoute from "./routes/userRoute.js"
+import RoleRoute from "./routes/roleRoute.js"
+import Database from "./config/Database.js";
+import AuthRoutes from "./routes/authRoutes.js"
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre,fetchFournisseursByArticle, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
+dotenv.config();
 
 app.use(express.urlencoded({extended: true}));
 const handlebars = exphbs.create({ extname: '.hbs',});
@@ -13,8 +21,27 @@ app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
 app.use(express.static("public")) 
 app.use(express.json());
+(async()=>(
+  await Database.sync()
+  ))
+   ();
+app.use(UserRoute);
+app.use(AuthRoutes);
+app.use(RoleRoute);
 import path from 'path';
  
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+}));
+
+app.use(session({
+  secret:process.env.SESS_SECRET,
+  resave : false,
+  saveUninitialized :true,
+  cookie: {
+    secure: 'auto', }
+}));
 
 // Routes
 router.get('/accounts/users', (req, res) => {
@@ -50,15 +77,6 @@ router.get('/edituser/:id', (req, res) => {
 app.use('/', router);
 
 
-// Create a nodemailer transporter
-/*const transporter = nodemailer.createTransport({
-  
-  service: 'gmail',
-  auth: {
-      user: 'email@gmail.com',
-      pass: 'password',
-  },
-});*/
 
 // Handle user registration
 app.post('/register', async (req, res) => {
@@ -165,11 +183,11 @@ app.get('/api/articles/:chapitreId', async (req, res) => {
   }
 });
 //fetch fournisseur of the article
-app.get('/api/fournisseurs/:articleId', async (req, res) => {
+app.get('/api/fournisseurs', async (req, res) => {
   try {
-      const articleId = req.params.articleId;
-      fetchFournisseursByArticle(articleId, (error, results) => {
+      fetchFournisseurs((error, results) => {
           if (!error) {
+          
               res.json(results);
           } else {
               console.error("Error fetching fournisseurs:", error);
@@ -230,6 +248,7 @@ app.get('/api/getBons', async (req, res) => {
   try {
     fetchBonsWithDetails((error, bons) => {
       if (!error) {
+     
         res.json(bons);
       } else {
         console.error('Error fetching bons:', error);
@@ -240,6 +259,7 @@ app.get('/api/getBons', async (req, res) => {
     console.error('Error fetching bons:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+     
 });
 //delete Bons
 app.delete('/api/deleteBons', async (req, res) => {
@@ -275,7 +295,9 @@ app.put('/api/bon/:bonId', async (req, res) => {
   const bonId = req.params.bonId;
   const updatedBonData = req.body.updatedBonData;
   console.log(updatedBonData);
+  console.log(updatedBonData.raisonSociale);
   const updatedCommandesData = req.body.updatedCommandesData; 
+ 
   console.log(updatedCommandesData);
   // Adjust this based on how the commandes data is sent from the client
   try {
@@ -337,7 +359,7 @@ app.post('/api/createArticle', async (req, res) => {
   
   try {
     const article = await createArticle( chapitreId,designation,code);
-    res.status(201).json({ article });
+    res.status(201).json( article );
   } catch (error) {
     console.error('Error creating Article:', error);
     res.status(500).json({ error: 'Internal server error' });
@@ -372,10 +394,11 @@ app.put('/api/deleteArticle', async (req, res) => {
   }
 });
 
-app.post('/api/products', async (req, res) => {
+app.post('/api/addProduct', async (req, res) => {
+  const {articleId,designation} = req.body;
   try {
-    const newProduct = req.body;
-    const addedProduct = await addProduct(newProduct);
+   
+    const addedProduct = await addProduct(articleId, designation);
     res.status(201).json(addedProduct);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -384,11 +407,14 @@ app.post('/api/products', async (req, res) => {
 });
 
 // Add endpoint for updating a product
-app.put('/api/products/:id', async (req, res) => {
+app.put('/api/editProduct', async (req, res) => {
+  const productId = req.body.productId;
+  const designation= req.body.designation;
+  
+console.log(req.body);
   try {
-    const productId = req.params.id;
-    const updatedProductData = req.body;
-    const updatedProduct = await updateProduct(productId, updatedProductData);
+   
+    const updatedProduct = await updateProduct(productId, designation);
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -397,13 +423,60 @@ app.put('/api/products/:id', async (req, res) => {
 });
 
 // Add endpoint for deleting a product
-app.delete('/api/products/:id', async (req, res) => {
-  try {
-    const productId = req.params.id;
-    await deleteProduct(productId);
-    res.status(204).send();
+app.put('/api/deleteProduct', async (req, res) => {
+
+const selectedId = req.body.selectedId; // Access data from request body
+try {
+    await deleteProduct(selectedId); 
+    res.status(200).json({ message: 'products deleted successfully' });
   } catch (error) {
-    console.error('Error deleting product:', error);
+    console.error('Error updating products:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/products', async (req, res) => {
+  try {
+      fetchProducts((error, results) => {
+          if (!error) {
+              res.json(results);
+          } else {
+              console.error("Error fetching products:", error);
+              res.status(500).json({ error: 'Internal server error' });
+          }
+      });
+  } catch (error) {
+      console.error("Error fetching products:", error);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.put('/api/bonRec/:bonId', async (req, res) => {
+  const bonId = req.params.bonId;
+  const updatedCommandes = req.body.updatedCommandes;
+  const dateCreation=updatedCommandes[0].dateCreation;
+
+
+  try {
+    const bonRecId =await createBonRec(bonId,dateCreation); // Pass updatedCommandesData to the function
+    res.status(200).json({ message: 'Bon Reception created successfully' });
+    await createReceptionRows(bonRecId,updatedCommandes); // Pass updatedCommandesData to the function
+  } catch (error) {
+    console.error('Error updating bon:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+
+});
+
+app.get('/api/getBonRec/:bonId', async (req, res) => {
+  const bonId = req.params.bonId;
+
+  try {
+    const bonRec = await fetchBonRec( bonId);
+    res.status(200).json(bonRec);
+  } catch (error) {
+    console.error('Error fetching bon reception:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
