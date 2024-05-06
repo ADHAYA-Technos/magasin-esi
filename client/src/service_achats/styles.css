@@ -1,0 +1,76 @@
+/* Container styles */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Heading styles */
+h1 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: red;
+}
+
+h2 {
+  font-size: 20px;
+  margin: 50px;
+}
+
+/* Table styles */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 8px;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+th {
+  background-color: #f2f2f2;
+}
+
+/* Form styles */
+input[type="text"] {
+  width: 100%;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 8px 16px;
+  margin-right: 10px;
+  cursor: pointer;
+}
+
+button.add {
+  background-color: blue;
+  border-radius: 8px;
+  width: 15%;
+  margin: 5px;
+  color: white;
+  border: none;
+}
+
+/* Edit and Delete button styles */
+button.edit {
+  border-radius: 8px;
+  width: 25%;
+  margin: 5px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+}
+
+button.delete {
+  border-radius: 8px;
+  width: 25%;
+  margin: 5px;
+  background-color: #f44336;
+  color: #ffffff;
+  border: none;
+}
