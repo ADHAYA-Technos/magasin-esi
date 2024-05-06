@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@mui/styles": "^5.15.15",
+    "@mui/x-data-grid": "^7.1.0",
+    "@mui/x-data-grid-premium": "^7.1.0",
+    "date-fns": "^3.6.0",
+    "graphql": "^16.8.1",
+    "graphql-request": "^6.1.0",
+    "react-google-charts": "^4.0.1",
+    "react-grid": "^4.0.4",
+    "react-grid-layout": "^1.4.4"
+  }
+}
