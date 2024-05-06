@@ -95,18 +95,19 @@ const BceManagement: React.FC = () => {
   };
 
   const handleGoBack = () => {
+    setShowEditBCE(false);
     setShowAddBCE(false);
   };
   const handleDeleteBons = async () => {
-  
     const bonsToDelete = bons.filter(bon => selectedRows.includes(bon.id));
- 
+   
     const bonsWithRecieved = bonsToDelete.filter(bon => bon.recieved > 0);
     if (bonsWithRecieved.length > 0) {
       const bonIds = bonsWithRecieved.map(bon => bon.id).join(', ');
-      const confirmDelete = window.confirm(`Bon ID: ${bonIds} has already started receiving orders. Do you want to proceed with deletion?`);
-      if (!confirmDelete) return;
+      window.alert(`Bon ID: ${bonIds} has already started receiving orders. You cannot delete it.`);
+      return; // Exit the function without further execution
     }
+  
     try {
       await axios.delete('/api/deleteBons', {
         data: { bonIds: bonsToDelete.map(bon => bon.id) }
@@ -117,6 +118,14 @@ const BceManagement: React.FC = () => {
     }
   };
   const handleEditBCE = () => {
+    const bonsToEdit = bons.filter(bon => selectedRows.includes(bon.id));
+
+    const bonsWithRecieved = bonsToEdit.filter(bon => bon.recieved > 0);
+    if (bonsWithRecieved.length > 0) {
+      const bonIds = bonsWithRecieved.map(bon => bon.id).join(', ');
+      window.alert(`Bon ID: ${bonIds} has already started receiving orders. You cannot Edit it.`);
+      return; // Exit the function without further execution
+    }
     if (selectedRows.length === 1) {
       const selectedRow = bons.find(bon => bon.id === selectedRows[0]);
       setShowEditBCE(true);

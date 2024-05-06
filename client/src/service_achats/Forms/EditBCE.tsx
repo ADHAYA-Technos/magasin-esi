@@ -237,6 +237,7 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
 
       alert('Changes saved successfully!');
       goBack(); // Go back to the previous page after saving changes
+      window.location.reload();
     } catch (error) {
       console.error('Error updating bon:', error);
       alert('Failed to save changes. Please try again.');
