@@ -91,13 +91,6 @@ const ProductsManagement: React.FC = () => {
     setSelectedArticle(event.target.value as string);
   };
 
-<<<<<<< HEAD
-  const handleAddProduct = () => {};
-
-  const handleUpdateProduct = (id: GridRowId) => {};
-
-  const handleDeleteProduct = (id: GridRowId) => {};
-=======
   const handleDialogSubmit = async () => {
     try { 
       if (editedProduct){
@@ -173,7 +166,6 @@ const ProductsManagement: React.FC = () => {
     setProducts(updatedProducts);
     setSelectedRows([]);
   };
->>>>>>> c6b1de4297cdce19a8d7cbccec53de73c3c1d24a
 
   const columns: GridColDef[] = [
     { field: "productId", headerName: "ID", width: 100 },
@@ -302,23 +294,6 @@ const ProductsManagement: React.FC = () => {
             label="Designation"
             type="text"
             name="designation"
-<<<<<<< HEAD
-            value={newProduct.designation}
-            onChange={(e) =>
-              setNewProduct({ ...newProduct, designation: e.target.value })
-            }
-            fullWidth
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-          <Button onClick={handleAddProduct} color="primary">
-            {editedProduct ? "Save" : "Add"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-=======
             value={editedProduct?editedProduct.designation:newProduct.designation}
             
             onChange={editedProduct?handleEditChange:handleAddChange}
@@ -334,7 +309,6 @@ const ProductsManagement: React.FC = () => {
       </DialogActions>
     </Dialog>
   </div>
->>>>>>> c6b1de4297cdce19a8d7cbccec53de73c3c1d24a
   );
 };
 

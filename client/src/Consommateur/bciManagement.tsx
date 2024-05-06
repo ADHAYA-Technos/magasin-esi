@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCI from './Forms/AddBCI.tsx';
-import EditBCI from './Forms/EditBCI.tsx';
+//import EditBCI from './Forms/EditBCI.tsx';
 import { renderProgress } from '../render/renderProgress.tsx';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
@@ -46,7 +46,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   const columns: GridColDef[] = [
     { field: 'bonId', headerName: 'ID', width: 70 }, // Change field to 'id'
     { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, // Change field to 'creationDate'
-    { field: 'recieved', headerName: 'Type', type: 'number', renderCell: renderProgress, width: 80 }, //Change field to 'Type'
+    { field: 'type', headerName: 'Type', type: 'number', renderCell: renderProgress, width: 80 }, //Change field to 'Type'
   ];
   
   function CustomToolbar() {
@@ -62,11 +62,11 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
     let csvContent = "data:text/csv;charset=utf-8,";
   
     // Add header row
-    csvContent += "ID,N° Chapitre,Article,Date De Création,Fournisseur,Recieved,Prix\n";
+    csvContent += "ID,N° Chapitre,Article,Date De Création,Type\n";
   
     // Add data rows
     bons.forEach(bon => {
-      csvContent += `${bon.id},${bon.numChapitre},${bon.articleName},${bon.creationDate},${bon.fournisseur},${bon.recieved},${bon.prix}\n`;
+      csvContent += `${bon.id},${bon.creationDate},${bon.type},}\n`;
     });
   
     // Create a blob and initiate download
@@ -163,7 +163,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
       </>
     )}
     {setShowAddBCI && <AddBCI selectedRowIds={selectedRows} goBack={handleGoBack} />}
-    {showEditBCIsetShowAddBCI && <EditBCI selectedRow={selectedRowForEdit} goBack={handleGoBack} />}
+    {/* {showEditBCIsetShowAddBCI && <EditBCI selectedRow={selectedRowForEdit} goBack={handleGoBack} />} */}
   </>
   
   );
