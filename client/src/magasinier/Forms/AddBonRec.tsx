@@ -29,6 +29,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
   const [chapitres, setChapitres] = useState<string[]>([]);
   const [articles, setArticles] = useState<string[]>([]);
   const [fournisseurs, setFournisseurs] = useState<string[]>([]);
+  const [entered , setEntered] = useState<boolean>();
   const [products, setProducts] = useState<string[]>([]);
   const currentDate = new Date();
   const formattedDate = currentDate.toISOString().split('T')[0];
@@ -53,19 +54,24 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
         });
     }
   }, [bonData.bonId]);
-
-
-  // Handler function to update quantity of a product
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    setEntered(true);
     const { value } = event.target;
+    const parsedValue = parseFloat(value);
+  
+    // Check if the parsedValue is NaN or if it's greater than leftQuantity
+    if (isNaN(parsedValue) || parsedValue > products[index].leftQuantity) {
+      // Update the input value to leftQuantity if parsedValue exceeds it
+      event.target.value = products[index].leftQuantity.toString();
+    }
+  
     setProducts((prevProducts) => {
       const updatedProducts = [...prevProducts];
-      updatedProducts[index].deliveredQuantity = value;
+      updatedProducts[index].deliveredQuantity = parseFloat(event.target.value); // Update with the parsed value
       return updatedProducts;
     });
-   
   };
-
+  
 
 
   // Handler function to save changes
@@ -75,6 +81,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
       const updatedCommandes = products.map((product) => ({
         commandeId: product.commandeId,
         quantity: product.deliveredQuantity,
+        left : product.leftQuantity -product.deliveredQuantity,
         dateCreation : formattedDate 
        
       }));
@@ -87,6 +94,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
 
       alert('Changes saved successfully!');
       goBack(); // Go back to the previous page after saving changes
+      window.location.reload();
     } catch (error) {
       console.error('Error updating bon:', error);
       alert('Failed to save changes. Please try again.');
@@ -149,10 +157,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
       <div className="border border-gray-300 rounded-md p-2">{product.designation}</div>
     </div>
 
-    <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">
-      <label className="block text-gray-700 text-sm font-bold mt-4 mb-1">Price:</label>
-      <div className="border border-gray-300 rounded-md p-2">{product.pu}</div>
-    </div>
+  
 
     <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">
       <label className="block text-gray-700 text-sm font-bold mt-4 mb-1">Demanded quantity:</label>
@@ -161,13 +166,13 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
 
     <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">
       <label className="block text-gray-700 text-sm font-bold mt-4 mb-1">Left quantity:</label>
-      <div className="border border-gray-300 rounded-md p-2">{product.leftQuantity}</div>
+      <div className="border border-gray-300 rounded-md p-2">{entered?(product.leftQuantity -product.deliveredQuantity):(product.leftQuantity?product.leftQuantity:0)}</div>
     </div>
 
     <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">
       <label className="block text-gray-700 text-sm font-bold mt-4 mb-1">Delivered quantity:</label>
       <input
-        type="number"
+        type="number" min={0} max={product.leftQuantity}
         onChange={(event) => handleQuantityChange(event, index)}
         className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
       />
