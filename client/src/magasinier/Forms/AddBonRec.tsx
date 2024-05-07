@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
 interface Props {
-  selectedRow: Bon | null;
+  selectedRow: Bon | undefined;
   goBack: () => void;
 }
 
@@ -29,7 +29,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
   const [chapitres, setChapitres] = useState<string[]>([]);
   const [articles, setArticles] = useState<string[]>([]);
   const [fournisseurs, setFournisseurs] = useState<string[]>([]);
-  const [entered , setEntered] = useState<boolean>();
+  const [entered , setEntered] = useState<boolean[]>([]);
   const [products, setProducts] = useState<string[]>([]);
   const currentDate = new Date();
   const formattedDate = currentDate.toISOString().split('T')[0];
@@ -54,11 +54,18 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
         });
     }
   }, [bonData.bonId]);
+  const setEnteredAtIndex = (index: number) => {
+    // Create a copy of the entered array
+    const updatedEntered = [...entered];
+    // Set the value at the specified index to true
+    updatedEntered[index] = true;
+    // Update the state with the new array
+    setEntered(updatedEntered);
+  };
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    setEntered(true);
+  setEnteredAtIndex(index);
     const { value } = event.target;
     const parsedValue = parseFloat(value);
-  
     // Check if the parsedValue is NaN or if it's greater than leftQuantity
     if (isNaN(parsedValue) || parsedValue > products[index].leftQuantity) {
       // Update the input value to leftQuantity if parsedValue exceeds it
@@ -98,7 +105,9 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
     } catch (error) {
       console.error('Error updating bon:', error);
       alert('Failed to save changes. Please try again.');
+      
     }
+    
   };
 
   return (
@@ -166,7 +175,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
 
     <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">
       <label className="block text-gray-700 text-sm font-bold mt-4 mb-1">Left quantity:</label>
-      <div className="border border-gray-300 rounded-md p-2">{entered?(product.leftQuantity -product.deliveredQuantity):(product.leftQuantity?product.leftQuantity:0)}</div>
+      <div className="border border-gray-300 rounded-md p-2">{entered[index]?(product.leftQuantity -product.deliveredQuantity):(product.leftQuantity?product.leftQuantity:0)}</div>
     </div>
 
     <div className="w-full sm:w-1/2 md:w-1/4 lg:w-1/5">

@@ -18,7 +18,10 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
         id: 0,
       });
       const [products, setProducts] = useState<string[]>([]);
-      const [entered , setEntered] = useState<boolean>();
+      const [entered , setEntered] = useState<boolean[]>([]);
+      const [leftQuantity, setLeftQuantity] = useState<number[]>();
+      const [deliveredQuantity, setDeliveredQuantity] = useState<number[]>();
+      
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
      
@@ -41,7 +44,14 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
             .then((response) => response.json())
             .then((data) => {
               if (Array.isArray(data)) {
+                
                 setProducts(data);
+                
+                 setLeftQuantity(data.map((product) => product.leftQuantity));
+                 setDeliveredQuantity(data.map((product) => product.quantity));
+                 console.warn(products);
+                 console.warn(leftQuantity);
+                 console.warn(deliveredQuantity);
               } else {
                 console.error('Invalid data format:', data);
               }
@@ -49,16 +59,25 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
         }
       }, [bonData.id]);
 
+      const setEnteredAtIndex = (index: number) => {
+        const updatedEntered = [...entered];
+        updatedEntered[index] = true;
+        setEntered(updatedEntered);
+      };
 
       const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        setEntered(true);
+        
+        
+        setEnteredAtIndex(index);
         const { value } = event.target;
         const parsedValue = parseFloat(value);
-    
+        console.warn(leftQuantity[index] );
         // Check if the parsedValue is NaN or if it's greater than leftQuantity
-        if (isNaN(parsedValue) || parsedValue > products[index].leftQuantity) {
+        if (isNaN(parsedValue) || parsedValue > (leftQuantity[index] + deliveredQuantity[index])) {
           // Update the input value to leftQuantity if parsedValue exceeds it
-          event.target.value = products[index].leftQuantity.toString();
+          event.target.value =(leftQuantity[index] + deliveredQuantity[index]).toString();
+          
+          return ;
         }
     
         setProducts((prevProducts) => {
@@ -73,12 +92,12 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
           const updatedCommandes = products.map((product) => ({
             commandeId: product.commandeId,
             quantity: product.deliveredQuantity,
-            left : product.leftQuantity -product.deliveredQuantity,
+            
             dateCreation : formattedDate 
            
           }));
     
-          
+          console.warn(updatedCommandes);
           await axios.put(`/api/UpdateBonRec/${bonData.id}`, {
             updatedCommandes
           });
@@ -120,13 +139,14 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
           <p className="text-gray-700 text-sm font-bold mb-1">Demanded quantity:</p>
           <div className="mb-2">{product.demandedQuantity}</div>
           <p className="text-gray-700 text-sm font-bold mb-1">Left quantity:</p>
-          <div className="mb-2">{entered ? (product.leftQuantity - product.deliveredQuantity) : (product.leftQuantity ? product.leftQuantity : 0)}</div>
+          <div className="mb-2">{entered[index] ? (leftQuantity[index] - (product.deliveredQuantity -deliveredQuantity[index])) : (product.leftQuantity ? product.leftQuantity : 0)}</div>
           <p className="text-gray-700 text-sm font-bold mb-1">Delivered quantity:</p>
           <input
             type="number"
             min={0}
-            max={product.demandedQuantity - product.deliveredQuantity}
-            value={entered ? product.deliveredQuantity : product.quantity}
+            
+            max={(leftQuantity[index] + deliveredQuantity[index])}
+            value={entered[index] ? product.deliveredQuantity : product.quantity}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />

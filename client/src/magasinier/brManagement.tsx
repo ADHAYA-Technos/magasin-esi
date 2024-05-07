@@ -48,7 +48,6 @@ const BRManagement: React.FC = () => {
     try {
       const response = await axios.get('/api/getBons');
       // Add a unique identifier to each row object
-      console.log(response)
       const bonsWithIds = response.data.map((bon, index) => ({
         ...bon,
         id: bon.bonId, // Use the index as a simple unique identifier
@@ -74,20 +73,20 @@ const BRManagement: React.FC = () => {
   const handleBRSelectionChange = (newSelection: GridRowId[]) => {
     setSelectedBRRows(bonsRec.filter(bon => newSelection.includes(bon.id))); 
     
-   console.log(selectedBRRows);
   };
   
     //BCE SELECTION CHANGE HANDLER
   const handleBCESelectionChange = (newSelection: GridRowId[]) => {
-    const selectedBCE = bons.find(bon => bon.bonId === newSelection[0]);
+   
+    const selectedBCE = bons.find(bon => bon.id === (newSelection[1]? newSelection[1]: newSelection[0]));
     setSelectedBCE(selectedBCE);
     // Get the new selected row ID
     const newSelectedBCEId = newSelection.length > 0 ? bons.find(bon => bon.id === newSelection[0])?.id : undefined;
   
     // If a different row is selected, fetch its BRs and clear the previous selection
-    if (newSelectedBCEId !== selectedRows) {
-      setSelectedRows(newSelectedBCEId);
-      fetchBonsRec(newSelectedBCEId);
+    if (newSelectedBCEId !== selectedBCE?.id) {
+      setSelectedRows(selectedBCE?.id);
+      fetchBonsRec(selectedBCE?.id);
       setBonRec([]); // Clear the BRs for the previous selection
     } else {
       // If the same row is clicked again, deselect it
@@ -142,12 +141,15 @@ const BRManagement: React.FC = () => {
   };
  
   const handleAddBR = () => {
-    if (!selectedRows || bons.find(b => b.id === selectedRows)?.recieved === 100) {
-      alert(!selectedRows ? 'Please select a row' : 'BCE already received all orders');
+  
+    console.warn(selectedBCE);
+    console.warn(selectedBCE?.recieved);
+    if (!selectedBCE || !(selectedBCE?.recieved < 1.0) ) {
+      alert(!selectedBCE ? 'Please select a row' : 'BCE already received all orders');
       return;
     }
     
-    setSelectedRowForEdit(selectedRows);
+    setSelectedRowForEdit(selectedBCE);
     setShowAddBR(true);
   };
 
@@ -170,6 +172,10 @@ const BRManagement: React.FC = () => {
     }
   };
   const handleEditBR = () => {
+    if(selectedBCE?.recieved == 1.0){
+      alert('BCE already received all orders you can not edit its BRs');
+      return;
+    }
     console.log(selectedBRRows[0]);
     setShowEditBR(true);
    
@@ -188,7 +194,7 @@ const BRManagement: React.FC = () => {
             columns={columns}
             checkboxSelection
             onRowSelectionModelChange={handleBCESelectionChange}
-            rowSelectionModel={selectedRows }
+            rowSelectionModel={selectedBCE?.id}
             
             slots={
               
