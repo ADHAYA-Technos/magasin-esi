@@ -70,6 +70,7 @@ const BRManagement: React.FC = () => {
   };
   //BR SELECTION CHANGE HANDLER
   const handleBRSelectionChange = (newSelection: GridRowId[]) => {
+    
     setSelectedBRRows(newSelection[0]); 
   };
   

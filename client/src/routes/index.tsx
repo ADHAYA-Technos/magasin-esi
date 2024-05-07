@@ -5,7 +5,10 @@ import adminRoutes from "./appRoutes.tsx";
 import serviceAchatsRoutes from "./asaRoutes.tsx";
 import magasinierRoutes from "./magasinierRoutes.tsx";
 import { RouteType } from "./config";
-import React from "react";
+import  chef_serviceRoutes from "./chef_serviceRoutes.tsx";
+
+
+import React, { useState, useEffect } from 'react';
 
 const generateRoute = (routes: RouteType[]): ReactNode => {
   return routes.map((route, index) => (
@@ -37,6 +40,7 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
 };
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
-
+export const CHFEFSERVICE: ReactNode = generateRoute(chef_serviceRoutes);
 export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
+
 
