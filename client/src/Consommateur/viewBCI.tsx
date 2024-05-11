@@ -2,10 +2,10 @@ import React from 'react'
 
 type Props = {}
 
-const viewBCE = (props: Props) => {
+const viewBCI = (props: Props) => {
   return (
     <div>viewBCI</div>
   )
 }
 
-export default viewBCE
+export default viewBCI

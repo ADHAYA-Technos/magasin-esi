@@ -4,6 +4,7 @@ import {ASAROUTES,MAGASINIERROUTES,ADMINROUTES,CONSOMATEUR} from "./routes/index
 import React from "react";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
+import bciFormulaire from "./Consommateur/bciFormulaire.tsx"
 function App() {
   
   return (
@@ -17,6 +18,7 @@ function App() {
           
 
         <Route path="/login" element={<LoginSignUp />}/>
+
        <Route path="/" element={<MainLayout />}>
        
           {ASAROUTES}
