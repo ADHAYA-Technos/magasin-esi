@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCI from './Forms/AddBCI.tsx';
-//import EditBCI from './Forms/EditBCI.tsx';
+import EditBCI from './Forms/EditBCI.tsx';
 import { renderProgress } from '../render/renderProgress.tsx';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
@@ -27,6 +27,10 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon | null>(null);
   useEffect(() => {
     fetchBons();
+    setBons([
+      { id: 1, bonId: 1, nom_consemateur: "AZ", dateCreation: "DDMMYYYY", type: "BCI" },
+      { id: 2, bonId: 2, nom_consemateur: "BY", dateCreation: "DDMMYYYY", type: "BCI" }
+    ]);
   }, []);
 
   const fetchBons = async () => {
