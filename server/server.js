@@ -10,7 +10,7 @@ import RoleRoute from "./routes/roleRoute.js"
 import Database from "./config/Database.js";
 import AuthRoutes from "./routes/authRoutes.js"
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
 dotenv.config();
@@ -514,8 +514,9 @@ app.get('/api/receptions/:id', async (req, res) => {
 
 app.put('/api/updateBonRec/:id', async (req, res) => {
   const bonRecId = req.params.id;
-  const updatedCommandes = req.body.updatedCommandes;
-  const dateCreation=updatedCommandes[0].dateCreation;
+  const updatedCommandes= req.body.updatedCommandes;
+  console.log(updatedCommandes);
+  const dateCreation=req.body.updatedCommandes[0].dateCreation;
 
 
   try {
@@ -527,7 +528,40 @@ app.put('/api/updateBonRec/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 
+  
 
+});
+
+app.get('/api/getBCIs', async (req, res) => {
+  try {
+    fetchBCIsWithDetails((error, bons) => {
+      if (!error) {
+     
+        res.json(bons);
+      } else {
+        console.error('Error fetching bons:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching bons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+     
+});
+
+//Create BCI 
+app.post('/api/createBCI', async (req, res) => {
+  
+  const { type,dateCreation } = req.body;
+  
+  try {
+    const bciId = await createBCI(type,dateCreation);
+    res.status(201).json({ bciId });
+  } catch (error) {
+    console.error('Error creating bon:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 app.listen(port, () => {
   console.log(`Example app listening on ports ${port}`)

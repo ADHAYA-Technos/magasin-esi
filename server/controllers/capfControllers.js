@@ -613,4 +613,32 @@ export const  updateReceptionRows = (bonRecId, updatedCommandes) => {
     });
   });
 };
+
+
+export const fetchBCIsWithDetails = (callback) => {
+  connection.query(`
+    SELECT * from bci
+  `, (error, results) => {
+    if (!error) {
+      callback(null, results);
+    } else {
+      callback(error);
+    }
+  });
+};
+
+export const createBCI= (type,dateCreation) => {
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('INSERT INTO BonReception (bonId,dateCreation) VALUES (?,?)',
+      [bonId,dateCreation],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+};
 export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows,deleteBonRec,updateReceptionRows};

@@ -32,6 +32,7 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
 
             
           setBonData(selectedBRRow);
+         
         }
       }, [selectedBRRow]);
     
@@ -49,9 +50,7 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
                 
                  setLeftQuantity(data.map((product) => product.leftQuantity));
                  setDeliveredQuantity(data.map((product) => product.quantity));
-                 console.warn(products);
-                 console.warn(leftQuantity);
-                 console.warn(deliveredQuantity);
+              
               } else {
                 console.error('Invalid data format:', data);
               }
@@ -71,7 +70,7 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
         setEnteredAtIndex(index);
         const { value } = event.target;
         const parsedValue = parseFloat(value);
-        console.warn(leftQuantity[index] );
+        
         // Check if the parsedValue is NaN or if it's greater than leftQuantity
         if (isNaN(parsedValue) || parsedValue > (leftQuantity[index] + deliveredQuantity[index])) {
           // Update the input value to leftQuantity if parsedValue exceeds it
@@ -85,10 +84,11 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
           updatedProducts[index].deliveredQuantity = parseFloat(event.target.value); // Update with the parsed value
           return updatedProducts;
         });
+        
       };
       const handleSaveChanges = async () => {
         try {
-          // Prepare updated commandes data
+         
           const updatedCommandes = products.map((product) => ({
             commandeId: product.commandeId,
             quantity: product.deliveredQuantity,
@@ -96,8 +96,8 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
             dateCreation : formattedDate 
            
           }));
-    
-          console.warn(updatedCommandes);
+      
+          
           await axios.put(`/api/UpdateBonRec/${bonData.id}`, {
             updatedCommandes
           });
@@ -144,7 +144,7 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
           <input
             type="number"
             min={0}
-            
+            disabled = {(leftQuantity[index] + deliveredQuantity[index]) === 0}
             max={(leftQuantity[index] + deliveredQuantity[index])}
             value={entered[index] ? product.deliveredQuantity : product.quantity}
             onChange={(event) => handleQuantityChange(event, index)}

@@ -14,15 +14,16 @@ import saveAs from 'file-saver';
 import Papa from 'papaparse';
 interface Bon {
   id: number;
-  creationDate: string;
-  type: string;
+  dateCreation: string;
+  typee: string;
+  isSeenByRSR : boolean
 }
 
 const BCIsetShowAddBCIManagement: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [bons, setBons] = useState<Bon[]>([]);
-  const [setShowAddBCI, setShowAddBCIsetShowAddBCI] = useState<boolean>(false);
-  const [showEditBCIsetShowAddBCI, setShowEditBCIsetShowAddBCI] = useState<boolean>(false);
+  const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
+  const [EditAddBCI, setShowEditBCI] = useState<boolean>(false);
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon | null>(null);
   useEffect(() => {
     fetchBons();
@@ -30,11 +31,11 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
 
   const fetchBons = async () => {
     try {
-      const response = await axios.get('/api/getBons');
+      const response = await axios.get('/api/getBCIs');
       // Add a unique identifier to each row object
       const bonsWithIds = response.data.map((bon, index) => ({
         ...bon,
-        id: bon.bonId, // Use the index as a simple unique identifier
+        id: bon.bciId, // Use the index as a simple unique identifier
       }));
       setBons(bonsWithIds);
     } catch (error) {
@@ -44,9 +45,10 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   
 
   const columns: GridColDef[] = [
-    { field: 'bonId', headerName: 'ID', width: 70 }, // Change field to 'id'
-    { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, // Change field to 'creationDate'
-    { field: 'type', headerName: 'Type', type: 'number', renderCell: renderProgress, width: 80 }, //Change field to 'Type'
+    { field: 'bciId', headerName: 'ID', width: 70 }, 
+    { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, 
+    { field: 'typee', headerName: 'Type', type: 'number', width: 80 }, 
+    { field: 'isSeenByRSR', headerName: 'Suivi', width: 80 }, 
   ];
   
   function CustomToolbar() {
@@ -79,15 +81,17 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   };
   const handleSelectionChange = (newSelection: GridRowId[]) => {
   
-    setSelectedRows(newSelection); 
+    setSelectedRows(newSelection[1]); 
+    console.warn(newSelection[1]);
   };
 
-  const handleAddBCIsetShowAddBCI = () => {
-    setShowAddBCIsetShowAddBCI(true);
+  const handleAddBCI = () => {
+    setShowAddBCI(true);
   };
 
   const handleGoBack = () => {
-    setShowAddBCIsetShowAddBCI(false);
+    setShowEditBCI(false);
+    setShowAddBCI(false);
   };
   const handleDeleteBons = async () => {
   
@@ -108,10 +112,10 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
       console.error('Error deleting bons:', error);
     }
   };
-  const handleEditBCIsetShowAddBCI = () => {
+  const handleEditBCI = () => {
     if (selectedRows.length === 1) {
       const selectedRow = bons.find(bon => bon.id === selectedRows[0]);
-      setShowEditBCIsetShowAddBCI(true);
+      setShowEditBCI (true);
       setSelectedRowForEdit(selectedRow);
      
     } else {
@@ -121,7 +125,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
 
   return (
     <>
-    {!setShowAddBCI && !showEditBCIsetShowAddBCI && (
+    {!ShowAddBCI && !EditAddBCI && (
       <>
         <div className="flex text-center text-2xl m-2 font-medium justify-center">
           Bons De Commande Interne
@@ -143,26 +147,21 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
           />
         </div>
         <Box sx={{ '& > :not(style)': { m: 1 } }} >
-  <Fab onClick={handleAddBCIsetShowAddBCI} color="success" aria-label="add">
+  <Fab onClick={handleAddBCI} color="success" aria-label="add">
     <AddIcon />
   </Fab>
-  <Fab color="secondary" aria-label="edit" onClick={handleEditBCIsetShowAddBCI}>
+  <Fab color="secondary" aria-label="edit" onClick={handleEditBCI}>
     <EditIcon />
   </Fab>
   <Fab color="error" aria-label="delete" onClick={handleDeleteBons}>
     <DeleteIcon />
   </Fab>
-  <button
-        className={` ml-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 `}
-        //onClick={handleValidate}
-      >
-        valider
-      </button>
+ 
 </Box>
 
       </>
     )}
-    {setShowAddBCI && <AddBCI selectedRowIds={selectedRows} goBack={handleGoBack} />}
+    {ShowAddBCI && <AddBCI goBack={handleGoBack} />}
     {/* {showEditBCIsetShowAddBCI && <EditBCI selectedRow={selectedRowForEdit} goBack={handleGoBack} />} */}
   </>
   

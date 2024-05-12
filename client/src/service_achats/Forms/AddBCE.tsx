@@ -14,7 +14,10 @@ interface OrderRecipient {
   prices: number[];
   quantities: number[];
 }
-
+type Product = {
+  productId: number;
+  designation: string;
+};
 const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
   const [orderRecipient, setOrderRecipient] = useState<OrderRecipient>({
     chapitre: '',
@@ -28,7 +31,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
   const [products, setProducts] = useState<string[]>([]);
   const [chapitres, setChapitres] = useState<string[]>([]);
   const [articles, setArticles] = useState<string[]>([]);
-  const [unselectedProducts, setUnselectedProducts] = useState<string[]>([]);
+  const [unselectedProducts, setUnselectedProducts] = useState<Product[][]>([]);
   const [lastRowPrice, setLastRowPrice] = useState('');
   const [lastRowQuantity, setLastRowQuantity] = useState('');
   const currentDate = new Date();
@@ -86,7 +89,17 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
       .then((response) => response.json())
       .then((data) => {
         if (Array.isArray(data)) {
-          setUnselectedProducts(data);
+          setUnselectedProducts(prevUnselectedProducts => {
+            // Create a copy of the previous state
+            const newState = [...prevUnselectedProducts];
+        
+         
+                newState[0] = data;
+            
+        
+            // Return the updated state
+            return newState;
+        });
           setProducts(data);
         } else {
           console.error('Invalid data format:', data);
@@ -132,9 +145,10 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
     }));
   };
 
+    const [selectedProductId , setselectedProductId] = useState('');
   const handleProductChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedProductId = event.target.value;
-
+    setselectedProductId(selectedProductId);
     // Check if the selected product is already selected in another row
     if (orderRecipient.products.some((product, i) => i !== index && product.productId === selectedProductId)) {
       //  nooot update the state if the product is already selected in another row
@@ -154,9 +168,29 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
       ...prevOrderRecipient,
       products: newProducts,
     }));
+
+      console.warn(unselectedProducts);
+    // Remove the selected product from unselectedProducts
+  const newProdArray = unselectedProducts[index].filter(product => product.productId  !== parseInt(selectedProductId))
+  setUnselectedProducts(prevUnselectedProducts => {
+    // Create a copy of the previous state
+    const newState = [...prevUnselectedProducts];
+
+    // Set each row from index 0 to data.length - 1 with the new data
+    
+        newState[index+1] = newProdArray;
+    
+    // Return the updated state
+    return newState;
+});
   };
 
   const handleAddRow = () => {
+
+    if (orderRecipient.products.length === unselectedProducts.length ) {
+      alert('You have already added all available products for this article.');
+      return;
+    }
     // allow adding the first row without conditions
     if (orderRecipient.products.length === 0) {
       setOrderRecipient((prevOrderRecipient) => ({
@@ -165,8 +199,8 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
       }));
       return;
     }
-
-    // Check if the last row has filled price and quantity
+    
+    // Check if the last row   has filled price and quantity
     const lastRowIndex = orderRecipient.products.length - 1;
     const lastRow = orderRecipient.products[lastRowIndex];
     if (
@@ -181,12 +215,9 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
         alert('You have already added all available products for this article.');
         return; // All products have been selected, exit early
       }
-
+     
       // Check if the number of rows exceeds the number of available products
-      if (orderRecipient.products.length >= unselectedProducts.length) {
-        alert('You have already added all available products for this article.');
-        return;
-      }
+     
 
       // Add a new row only if the last row has filled price and quantity
       setOrderRecipient((prevOrderRecipient) => ({
@@ -233,7 +264,6 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
   };
 
   const handleConfirm = async () => {
-   console.log(filteredFournisseurs);
     if(filteredFournisseurs.length > 0 && !orderRecipient.fournisseur){
       setOrderRecipient((prevOrderRecipient) => ({
         ...prevOrderRecipient,
@@ -322,7 +352,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
     }
   };
   
-  console.debug(orderRecipient.fournisseur);
+
   return (
     <>
       <div className="mb-6">
@@ -395,7 +425,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           >
             <option value="">Select a product</option>
-            {unselectedProducts.map((unselectedProduct) => (
+            {unselectedProducts[index].map((unselectedProduct) => (
               <option
                 key={unselectedProduct.productId}
                 value={unselectedProduct.productId}
@@ -421,7 +451,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
             onChange={(event) => handleQuantityChange(index, event)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />
-          <input type="checkbox" className="mt-4" />
+         
         </div>
       ))}
       <button

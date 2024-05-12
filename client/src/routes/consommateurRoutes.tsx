@@ -71,7 +71,7 @@ export const consommateurRoutes: RouteType[] = [
     ],
   },
   {
-    path: "/Bci",
+    path: "/bci",
     element: <BciManagement />,
     state: "bci",
     sidebarProps: {
