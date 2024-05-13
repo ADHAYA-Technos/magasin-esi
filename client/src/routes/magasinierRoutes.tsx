@@ -15,11 +15,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
 import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import InventoryIcon from '@mui/icons-material/Inventory';
-import FactCheckIcon from '@mui/icons-material/FactCheck';
-
-
-import GradingIcon from '@mui/icons-material/Grading';
 
 //MAGASINIER
 import  Profile  from "../pages/profile/Profile.tsx";
@@ -83,7 +78,7 @@ export const magasinierRoutes: RouteType[] = [
       state: "stock",
       sidebarProps: {
         displayText: "Stock Management",
-        icon: <InventoryIcon />
+        icon: <ManageAccountsIcon />
       },
       child: [
         {
@@ -102,7 +97,7 @@ export const magasinierRoutes: RouteType[] = [
       state: "br",
       sidebarProps: {
         displayText: "Bon de Laivraison",
-        icon: <GradingIcon />
+        icon: <AccountTreeIcon />
       }
     },
     {
@@ -111,7 +106,7 @@ export const magasinierRoutes: RouteType[] = [
       state: "bs",
       sidebarProps: {
         displayText: "Bon de Sortie",
-        icon: <FactCheckIcon />
+        icon: <AccessibilityIcon />
       }
     }
     ,
@@ -121,7 +116,7 @@ export const magasinierRoutes: RouteType[] = [
       state: "bd",
       sidebarProps: {
         displayText: "Bon de Décharge",
-        icon: <FactCheckIcon />
+        icon: <AccessibilityIcon />
       }
     },
     
@@ -131,7 +126,7 @@ export const magasinierRoutes: RouteType[] = [
       state: "bdr",
       sidebarProps: {
         displayText: "Bon de Décharge de Ristitution",
-        icon: <FactCheckIcon />
+        icon: <AccessibilityIcon />
       }
     },
     {

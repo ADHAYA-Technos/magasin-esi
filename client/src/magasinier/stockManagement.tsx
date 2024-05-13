@@ -1,16 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
-import { makeStyles, Theme } from '@mui/styles';
-
-const useStyles = makeStyles((theme: Theme) => ({
-    blueButton: {
-        backgroundColor: '#1976d2',
-        color: '#fff',
-        '&:hover': {
-            backgroundColor: '#135ba1',
-        },
-    },
-}));
 
 type Product = {
     productId: number;
@@ -18,31 +7,8 @@ type Product = {
     quantity_l: number;
     quantity_p: number;
     isConsommable: boolean;
+    quantityPhysique: number; // Added quantityPhysique property
 };
-
-const CreateRapportCell = (params) => {
-    const classes = useStyles(); // Using useStyles here
-
-    const handleCreateRapport = () => {
-        // Logic for creating rapport d'inventaire goes here
-        console.log("Creating rapport d'inventaire for product:", params.row.productId);
-    };
-
-    return (
-        <button className={classes.blueButton} onClick={handleCreateRapport}>
-            Create Rapport
-        </button>
-    );
-};
-
-const columns = [
-    { field: 'productId', headerName: 'Product ID', flex: 1 },
-    { field: 'designation', headerName: 'Designation', flex: 1 },
-    { field: 'quantityLogique', headerName: 'Quantity Physique', flex: 1 },
-    { field: 'quantityPhysique', headerName: 'Quantity Logique', flex: 1 },
-    { field: 'isConsommable', headerName: 'Consommable / nonConsommable ', flex: 1 },
-    { field: 'createRapport', headerName: 'Create Rapport', flex: 1, renderCell: CreateRapportCell },
-];
 
 const ProductTable = () => {
     const [products, setProducts] = useState<Product[]>([]);
@@ -55,11 +21,40 @@ const ProductTable = () => {
                 const productsWithIds = data.map((product: { productId: any }) => ({
                     ...product,
                     id: product.productId, // Assuming productId starts from 1
+                    quantityPhysique: 0, // Initialize quantityPhysique property
                 }));
                 setProducts(productsWithIds);
             })
             .catch((error) => console.error('Error fetching products:', error));
     }, []);
+
+    const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, rowIndex: number) => {
+        const { value } = event.target;
+        const parsedValue = parseInt(value, 10) || 0; // Convert value to integer or 0 if not a valid number
+        // Update the product's physique quantity in the state
+        setProducts((prevProducts) => {
+            const updatedProducts = [...prevProducts];
+            updatedProducts[rowIndex].quantityPhysique = parsedValue;
+            return updatedProducts;
+        });
+    };
+
+    const columns = [
+        { field: 'productId', headerName: 'Product ID', flex: 1 },
+        { field: 'designation', headerName: 'Designation', flex: 1 },
+        { field: 'quantityPhysique', headerName: 'Physique Quantity', flex: 1, 
+          renderCell: (params) => (
+            <input
+                type="number"
+                value={params.value}
+                onChange={(event) => handleQuantityChange(event, params.rowIndex)}
+                style={{ width: '100%' }}
+            />
+          )
+        },
+        { field: 'quantityLogique', headerName: 'Logical Quantity', flex: 1 },
+        { field: 'isConsommable', headerName: 'Consommable / nonConsommable ', flex: 1 },
+    ];
 
     return (
         <div style={{ height: 400, width: '100%' }}>

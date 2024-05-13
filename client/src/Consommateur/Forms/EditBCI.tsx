@@ -7,27 +7,11 @@ interface Props {
 }
 
 interface Bon {
-  bonId: number;
-  numChapitre: string;
-  designation: string;
+  Id: number;
   dateCreation: string;
-  raisonSociale: string;
+  : string;
   recieved: number;
   totalPu: string;
-}
-type Chapitre = {
-  chapitreId: number;
-  numChapitre: string;
-  libelle: string;
-};
-interface OrderRecipient {
-  bonId: number;
-  chapitre: string;
-  article: string;
-  fournisseur: string;
-  products: string[];
-  prices: number[];
-  quantities: number[];
 }
 
 const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
@@ -40,90 +24,18 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
     recieved: 0,
     totalPu: '',
   });
-  const [orderRecipient, setOrderRecipient] = useState<OrderRecipient>({
-    bonId: 0,
-    chapitre: '',
-    article: '',
-    fournisseur: '',
-    products: [],
-    prices: [],
-    quantities: [],
-  });
-  const [chapitres, setChapitres] = useState<Chapitre[]>([]);
+  const [chapitres, setChapitres] = useState<string[]>([]);
   const [articles, setArticles] = useState<string[]>([]);
   const [fournisseurs, setFournisseurs] = useState<string[]>([]);
   const [products, setProducts] = useState<string[]>([]);
-  const [unselectedProducts, setUnselectedProducts] = useState<string[]>([]);
+
   useEffect(() => {
     if (selectedRow) {
       setBonData(selectedRow);
-      setOrderRecipient((prevOrderRecipient) => ({
-        ...prevOrderRecipient,
-        bonId: selectedRow.bonId,
-      }));
-      
     }
   }, [selectedRow]);
-  useEffect(() => {
-    if (bonData.bonId !== 0) {
-      fetch(`/api/commandes/${bonData.bonId}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-           
-            setProducts(data);
-            setOrderRecipient((prevOrderRecipient) => ({
-              ...prevOrderRecipient,
-              products:products.map((product) => product.commandeId),
-              prices:products.map((product) => product.pu),
-              quantities:products.map((product) => product.qunatity),
-            }));
-          } else {
-            console.error('Invalid data format:', data);
-          }
-        });
-        fetch(`/api/fournisseurs`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (Array.isArray(data)) {
-           
-            setFournisseurs(data);
-          }
-          else {
-            console.error('Invalid data format:', data);
-          }
-        });
- 
-    }
-  }, [bonData.bonId]);
-
-
-  const fetchArticles = async (chapitreId: string) => {
-    try {
-      const response = await axios.get(`/api/articles/${chapitreId}`);
-      setArticles(response.data);
-    } catch (error) {
-      console.error('Error fetching articles:', error);
-    }
-  };
-  
-  const handleChapitreChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setArticles([]);
-    const chapitreId = event.target.value;
-    console.log(chapitreId);
-    setOrderRecipient((prevOrderRecipient) => ({
-      ...prevOrderRecipient,
-      chapitre: chapitreId,
-    }));
-    setProducts([]);
-    
-   
-    fetchArticles(chapitreId);
-  };
-
 
   const handleChapitreClick = () => {
-   
     fetch('/api/chapitres')
       .then((response) => response.json())
       .then((data) => {
@@ -134,40 +46,57 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
         }
       })
       .catch((error) => console.log(error));
-      
+    setBonData((prevBonData) => ({
+      ...prevBonData,
+      numChapitre: '',
+    }));
   };
 
+  const fetchArticles = async (chapitreId: string) => {
+    try {
+      const response = await axios.get(`/api/articles/${chapitreId}`);
+      setArticles(response.data);
+    } catch (error) {
+      console.error('Error fetching articles:', error);
+    }
+  };
 
+  const fetchFournisseurs = async (articleId: string) => {
+    try {
+      const response = await axios.get(`/api/fournisseurs/${articleId}`);
+      setFournisseurs(response.data);
+    } catch (error) {
+      console.error('Error fetching fournisseurs:', error);
+    }
+  };
 
+  useEffect(() => {
+    if (bonData.bonId !== 0) {
+      fetch(`/api/commandes/${bonData.bonId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (Array.isArray(data)) {
+            console.warn(data);
+            setProducts(data);
+          } else {
+            console.error('Invalid data format:', data);
+          }
+        });
+    }
+  }, [bonData.bonId]);
+
+  const handleChapitreChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedChapitre = event.target.value;
+    setBonData({ ...bonData, numChapitre: selectedChapitre });
+    fetchArticles(selectedChapitre);
+  };
 
   const handleArticleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedArticle = event.target.value;
-    const articleId = event.target.value;
-    setProducts([]);
-    setOrderRecipient((prevOrderRecipient) => ({
-      ...prevOrderRecipient,
-      article: articleId,
-      products: [],
-      prices: [],
-      quantities: [],
-    }));
     setBonData({ ...bonData, designation: selectedArticle });
-    const selectedChapitre = chapitres.find((chapitre) => chapitre.numChapitre === bonData.numChapitre);
-    if (selectedChapitre) {
-      fetchArticles(selectedChapitre.chapitreId.toString());
-    }
-    
-    fetch(`/api/products/${articleId}`)
-      .then((response) => response.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setUnselectedProducts(data);
-          setProducts(data);
-        } else {
-          console.error("Invalid data format:", data);
-        }
-      });
+    fetchFournisseurs(selectedArticle);
   };
+
   const handleFournisseurChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedFournisseur = event.target.value;
     setBonData({ ...bonData, raisonSociale: selectedFournisseur });
@@ -207,15 +136,10 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
 
   // Handler function to save changes
   const handleSaveChanges = async () => {
-    if (products.length === 0) {
-      alert('Please add at least one product to the list.');
-      return;
-    }
     try {
       // Prepare updated commandes data
       const updatedCommandes = products.map((product) => ({
-        
-        commandeId: product.commandeId,
+        commandeId: product.productId,
         pu: product.pu,
         quantity: product.quantity,
       }));
@@ -237,44 +161,42 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
 
       alert('Changes saved successfully!');
       goBack(); // Go back to the previous page after saving changes
-      window.location.reload();
     } catch (error) {
       console.error('Error updating bon:', error);
       alert('Failed to save changes. Please try again.');
     }
   };
-  
+
   return (
     <>
       <div className="mb-6">
         <label className="block text-gray-700 text-sm font-bold mb-2">Chapitre:</label>
         <select
-  defaultValue={bonData.numChapitre}
-  value={orderRecipient.chapitre}
-  onChange={handleChapitreChange}
-  onClick={handleChapitreClick}
-  className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
->
-  <option value={bonData.numChapitre}>{bonData.numChapitre}</option>
-  {chapitres.map((chapitre) => (
-    <option key={chapitre.chapitreId} value={chapitre.numChapitre}>
-      {chapitre.numChapitre} - {chapitre.libelle}
-    </option>
-  ))}
-</select>
+          defaultValue={bonData.numChapitre}
+          value={bonData.numChapitre}
+          onChange={handleChapitreChange}
+          onClick={handleChapitreClick}
+          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
+        >
+          <option value="">{bonData.numChapitre}</option>
+          {chapitres.map((chapitre) => (
+            <option key={chapitre} value={chapitre}>
+              {chapitre}
+            </option>
+          ))}
+        </select>
       </div>
       <div className="mb-6">
         <label className="block text-gray-700 text-sm font-bold mb-2">Article:</label>
         <select
-        defaultValue={bonData.designation}
           value={bonData.designation}
           onChange={handleArticleChange}
           className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
         >
-          <option value={bonData.designation}>{bonData.designation}</option>
+          <option value="">{bonData.designation}</option>
           {articles.map((article) => (
-            <option key={article.articleId} value={article.designation}>
-              {article.designation}
+            <option key={article} value={article}>
+              {article}
             </option>
           ))}
         </select>
@@ -282,15 +204,14 @@ const EditBCE: React.FC<Props> = ({ selectedRow, goBack }) => {
       <div className="mb-6">
         <label className="block text-gray-700 text-sm font-bold mb-2">Fournisseur:</label>
         <select
-          defaultValue={bonData.raisonSociale}
           value={bonData.raisonSociale}
           onChange={handleFournisseurChange}
           className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
         >
           <option value="">{bonData.raisonSociale}</option>
           {fournisseurs.map((fournisseur) => (
-            <option key={fournisseur.fournisseurId} value={fournisseur.raisonSocial}>
-              {fournisseur.raisonSociale}
+            <option key={fournisseur} value={fournisseur}>
+              {fournisseur}
             </option>
           ))}
         </select>
