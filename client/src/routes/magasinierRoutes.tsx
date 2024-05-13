@@ -9,7 +9,7 @@ import SaasPage from "../pages/dashboard/SaasPage.tsx";
 import DocumentationPage from "../pages/documentation/DocumentationPage.tsx";
 import FormatListBulletedOutlinedIcon from '@mui/icons-material/FormatListBulletedOutlined';
  //icons
- import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import PersonIcon from '@mui/icons-material/Person';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
