@@ -1,10 +1,9 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout.tsx";
-import {ASAROUTES,MAGASINIERROUTES,ADMINROUTES,CONSOMATEUR} from "./routes/index.tsx";
+import {ASAROUTES,MAGASINIERROUTES,RSR,DIRECTOR,CONSOMATEUR} from "./routes/index.tsx";
 import React from "react";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
-import bciFormulaire from "./Consommateur/bciFormulaire.tsx"
 function App() {
   
   return (
@@ -24,8 +23,9 @@ function App() {
           {ASAROUTES}
 
           {CONSOMATEUR}
+          {RSR}
+          {DIRECTOR}
 
-=======
           {MAGASINIERROUTES}
         </Route>
        

@@ -3,9 +3,10 @@ import axios from 'axios';
 import { DataGrid, GridRowId, GridToolbarContainer, GridToolbarExport } from '@mui/x-data-grid';
 import { GridColDef } from '@mui/x-data-grid';
 import { Box, Fab } from '@mui/material';
-
+import AddIcon from '@mui/icons-material/Add';
+import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-
+import AddBCI from './Forms/ADDBCI.tsx';
 import EditBCI from './Forms/EDITBCI.tsx';
 import { renderBCIProgress } from '../render/renderBCIProgress.tsx';
   
@@ -15,11 +16,10 @@ interface Bon {
   typee: string;
   isSeenByDR : boolean
   isSeenByRSR :boolean;
-  isSeenByMag :boolean;
   name : string;
 }
 
-const BSManagement: React.FC = () => {
+const BCIValidation: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [bons, setBons] = useState<Bon[]>([]);
   const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
@@ -39,7 +39,7 @@ const BSManagement: React.FC = () => {
         id: bon.bciId, // Use the index as a simple unique identifier
       }));
      
-      setBons(bonsWithIds.filter(bon => bon.isSeenByDR === 1 && bon.isSeenByRSR ===1 &&bon.isSeenByMag===0 && bon.typee ==='Sortie' ));
+      setBons(bonsWithIds.filter(bon => bon.isSeenByDR === 0 && bon.isSeenByRSR ===1));
     } catch (error) {
       console.error('Error fetching bons:', error);
     }
@@ -158,9 +158,11 @@ const BSManagement: React.FC = () => {
           />
         </div>
         <Box sx={{ '& > :not(style)': { m: 1 } }} >
-        
+        <button style={{ backgroundColor: 'blue', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleAddBCI}>
+      Add BR
+    </button>
     <button style={{ backgroundColor: 'green', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleEditBCI}>
-      Add BS
+      Validate BCI
     </button>
   <Fab color="error" aria-label="delete" onClick={handleDeleteBons}>
     <DeleteIcon />
@@ -170,10 +172,11 @@ const BSManagement: React.FC = () => {
 
       </>
     )}
+    {ShowAddBCI && <AddBCI goBack={handleGoBack} />}
      {showEditBCI && <EditBCI selectedBCIRow={selectedRowForEdit[0]} goBack={handleGoBack} />} 
   </>
   
   );
 };
 
-export default BSManagement;
+export default BCIValidation;

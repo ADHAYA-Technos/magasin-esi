@@ -10,7 +10,7 @@ import RoleRoute from "./routes/roleRoute.js"
 import Database from "./config/Database.js";
 import AuthRoutes from "./routes/authRoutes.js"
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails, createBciRows, createBCI, fetchLigneBCIByBonRec, deleteBCIs, updateBCIRows, updateBCI} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
 dotenv.config();
@@ -562,6 +562,106 @@ app.post('/api/createBCI', async (req, res) => {
     console.error('Error creating bon:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
+});
+
+// Route to insert rows into lignebci table
+app.post('/api/createBciRows', async (req, res) => {
+
+  const products = req.body;
+  console.log(products);
+  try {
+    await createBciRows(  products);
+    res.status(201).json({ message: 'Commandes of "BCI" rows inserted successfully' });
+  } catch (error) {
+    console.error('Error inserting Commande rows:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/lignebci/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    fetchLigneBCIByBonRec(id, (error, results) => {
+      if (!error) {
+        res.json(results);
+        console.log(results);
+      } else {
+        console.error('Error fetching ligne de receptions:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching ligne de receptions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+//delete BCIs
+app.delete('/api/deleteBCIs', async (req, res) => {
+  console.log(req.body);
+  const bciId = req.body.selectedRows;
+  try {
+
+    await deleteBCIs(bciId);
+    res.sendStatus(204); // No content (successful deletion)
+  } catch (error) {
+    console.error('Error deleting bons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.put('/api/updateBCI/:id', async (req, res) => {
+  const bciId = req.params.id;
+  const updatedCommandes= req.body.updatedCommandes;
+  console.log(updatedCommandes);
+  const dateCreation=req.body.updatedCommandes[0].dateCreation;
+  if(updatedCommandes[0].MAG ){
+    try {
+      await updateBCI(bciId,updatedCommandes[0].MAG); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per Magasinier successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return;
+  }else
+  if(updatedCommandes[0].RSR ){
+    try {
+      await updateBCI(bciId,updatedCommandes[0].RSR); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per RSR successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return;
+  }else if (updatedCommandes[0].DR){
+    
+    try {
+      await updateBCI(bciId,updatedCommandes[0].DR); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per Director successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return ;
+  }
+
+  try {
+    await updateBCI(bciId,dateCreation); // Pass updatedCommandesData to the function
+    res.status(200).json({ message: 'Bon de Commande Interne created successfully' });
+    await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+  } catch (error) {
+    console.error('Error updating BCI:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+  
+
 });
 app.listen(port, () => {
   console.log(`Example app listening on ports ${port}`)

@@ -80,8 +80,8 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
           const updatedCommandes = products.map((product) => ({
             productId: product.productId,
             demandedQuantity: product.demandedQuantity,
-            dateCreation : formattedDate 
-           
+            dateCreation : formattedDate ,
+            MAG : 'MAG' 
           }));
       
           
@@ -124,7 +124,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
           <input
             type="number"
             min={0}
-            max={product.quantityPhysique - product.seuilMin }
+            max={ product.demandedQuantity}
             value={product.demandedQuantity}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
@@ -140,7 +140,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
       className="bg-blue-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 mr-4"
       onClick={handleSaveChanges}
     >
-      Save Changes
+      Validate BCI
     </button>
     <button
       className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-300"

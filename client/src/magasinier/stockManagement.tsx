@@ -43,11 +43,12 @@ const ProductTable = () => {
         { field: 'productId', headerName: 'Product ID', flex: 1 },
         { field: 'designation', headerName: 'Designation', flex: 1 },
         { field: 'quantityPhysique', headerName: 'Physique Quantity', flex: 1, 
-          renderCell: (params) => (
+          renderCell: () => (
             <input
                 type="number"
-                value={params.value}
-                onChange={(event) => handleQuantityChange(event, params.rowIndex)}
+                value={''}
+                disabled={true}
+                
                 style={{ width: '100%' }}
             />
           )

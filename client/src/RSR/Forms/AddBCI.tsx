@@ -11,8 +11,6 @@ interface Props {
 type Product = {
   productId: number;
   designation: string;
-  quantityPhysique: number;
-  seuilMin : number ;
 };
 
 interface OrderRecipient {
@@ -48,18 +46,30 @@ const AddBCI: React.FC<Props> = ({  goBack }) => {
         
            
                 newState[0] = data;
-          
+                newState[1] = data;
             // Return the updated state
             return newState;
         });      
         })
         .catch((error) => console.error("Error fetching products:", error));
+
+
+        setSearched(prevSearched => {
+          const newState = [...prevSearched];
+            
+          for (let i = 0; i < products.length; i++) {
+            newState.push(false);
+          }
+          
+          
+          // Return the updated state
+          return newState;
+          
+         })
     }
   , []);
 
   const handleAddRow = () => {
-
-     
     // allow adding the first row without conditions
     if (orderRecipient.products.length === 0) {
       setOrderRecipient((prevOrderRecipient) => ({
@@ -166,8 +176,8 @@ const AddBCI: React.FC<Props> = ({  goBack }) => {
       ...prevOrderRecipient,
       products: newProducts,
     }));
-
-    const newProdArray = unselectedProducts[index].filter(product => product.productId !== parseInt(selectedProductId));
+    console.warn(index +1)
+    const newProdArray = unselectedProducts[index+1].filter(product => product.productId !== parseInt(selectedProductId));
 
   setUnselectedProducts(prevUnselectedProducts => {
     // Create a copy of the previous state
@@ -294,13 +304,13 @@ const handleSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>, inde
    })
 } 
   if(!newSearchTerm){
-   
+    const newProdArray = unselectedProducts[index-1].filter(product => product.productId !== selectedProductIds[index-1]);
     setUnselectedProducts(prevUnselectedProducts => {
       // Create a copy of the previous state
       const newState = [...prevUnselectedProducts];
       
       // Update the specific row with the new data
-      newState[index] = newState[index+1];
+      newState[index] = newProdArray;
       
       // Return the updated state
       return newState;
@@ -402,9 +412,6 @@ const handleSearchTermChange = (event: React.ChangeEvent<HTMLInputElement>, inde
           <input
             type="number"
             min={0}
-            disabled={products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.seuilMin>=products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.quantityPhysique }
-            max={products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.quantityPhysique - products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.seuilMin}
-            placeholder={(products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.seuilMin>=products.find(product => product.productId === parseInt(orderRecipient.products[index].productId))?.quantityPhysique)? "Produit non disponible" : "Enter Quantity "}
             value={orderRecipient.quantities[index]}
             onChange={(event) => handleQuantityChange(index, event)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"

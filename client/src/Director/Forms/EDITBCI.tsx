@@ -1,3 +1,4 @@
+import { TextField } from '@mui/material';
 import axios from 'axios';
 import React from 'react';
 import { useEffect, useState } from 'react'
@@ -27,7 +28,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
         quantities : [],
       });
       const [products, setProducts] = useState<Product[]>([]);
-      const [entered , setEntered] = useState<boolean[]>([]);
+     
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
      
@@ -80,8 +81,8 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
           const updatedCommandes = products.map((product) => ({
             productId: product.productId,
             demandedQuantity: product.demandedQuantity,
-            dateCreation : formattedDate 
-           
+            dateCreation : formattedDate ,
+            DR :'Director' 
           }));
       
           
@@ -120,16 +121,17 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
         <div className="border border-gray-300 rounded-md p-4 mb-4 w-full">
           <p className="text-gray-700 text-sm font-bold mb-1">Product:</p>
           <div className="mb-2">{product.designation}</div>
-          <p className="text-gray-700 text-sm font-bold mb-1">Demanded quantity:</p>
+          <p className="text-gray-700 text-sm font-bold mb-4">Demanded quantity:</p>
           <input
             type="number"
             min={0}
-            max={product.quantityPhysique - product.seuilMin }
+            max={product.quantityPhysique}
             value={product.demandedQuantity}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />
-         
+          <p className="text-red-500  placeholder:text-sm italic ">Available quantity :{product.quantityPhysique}  , Seuil :{product.seuilMin} </p>
+        
         </div>
       </div>
     ))}
@@ -140,7 +142,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
       className="bg-blue-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 mr-4"
       onClick={handleSaveChanges}
     >
-      Save Changes
+      Validate BCI
     </button>
     <button
       className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-300"

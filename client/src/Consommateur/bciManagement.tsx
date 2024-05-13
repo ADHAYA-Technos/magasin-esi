@@ -5,32 +5,29 @@ import { GridColDef } from '@mui/x-data-grid';
 import { Box, Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import NavigationIcon from '@mui/icons-material/Navigation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCI from './Forms/AddBCI.tsx';
 import EditBCI from './Forms/EditBCI.tsx';
-import { renderProgress } from '../render/renderProgress.tsx';
-import saveAs from 'file-saver';
-import Papa from 'papaparse';
+import { renderBCIProgress } from '../render/renderBCIProgress.tsx';
+  
 interface Bon {
   id: number;
   dateCreation: string;
   typee: string;
   isSeenByRSR : boolean
+  isSeenByDR : boolean
+  isSeenByMag : boolean
 }
 
 const BCIsetShowAddBCIManagement: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [bons, setBons] = useState<Bon[]>([]);
   const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
-  const [EditAddBCI, setShowEditBCI] = useState<boolean>(false);
-  const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon | null>(null);
+  const [showEditBCI, setShowEditBCI] = useState<boolean>(false);
+  const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon []>([]);
   useEffect(() => {
     fetchBons();
-    setBons([
-      { id: 1, bonId: 1, nom_consemateur: "AZ", dateCreation: "DDMMYYYY", type: "BCI" },
-      { id: 2, bonId: 2, nom_consemateur: "BY", dateCreation: "DDMMYYYY", type: "BCI" }
-    ]);
+    
   }, []);
 
   const fetchBons = async () => {
@@ -52,7 +49,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
     { field: 'bciId', headerName: 'ID', width: 70 }, 
     { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, 
     { field: 'typee', headerName: 'Type', type: 'number', width: 80 }, 
-    { field: 'isSeenByRSR', headerName: 'Suivi', width: 80 }, 
+    { field: 'progress', headerName: 'Progress', renderCell: renderBCIProgress, width: 500 }, 
   ];
   
   function CustomToolbar() {
@@ -84,9 +81,11 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
     link.click();
   };
   const handleSelectionChange = (newSelection: GridRowId[]) => {
-  
+     
     setSelectedRows(newSelection[1]); 
-    console.warn(newSelection[1]);
+    
+    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[1]));
+    
   };
 
   const handleAddBCI = () => {
@@ -97,39 +96,49 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
     setShowEditBCI(false);
     setShowAddBCI(false);
   };
+
+
+  //handle DELETE BCIs
   const handleDeleteBons = async () => {
+    const bonsWithProgress = bons.filter(bon => bon.id === parseInt(selectedRows) && bon.isSeenByRSR === 1);
   
-    //const bonsToDelete = bons.filter(bon => selectedRows.includes(bon.id));
- 
-    const bonsWithRecieved = bonsToDelete.filter(bon => bon.recieved > 0);
-    if (bonsWithRecieved.length > 0) {
-      const bonIds = bonsWithRecieved.map(bon => bon.id).join(', ');
-      const confirmDelete = window.confirm(`Bon ID: ${bonIds} has already started receiving orders. Do you want to proceed with deletion?`);
-      if (!confirmDelete) return;
+    if (bonsWithProgress.length > 0) {
+      
+      alert(`the selected bon has already treated by RSR and can't be deleted`);
+      return; // Exit the function without further execution
     }
     try {
-      await axios.delete('/api/deleteBons', {
-        data: { bonIds: bonsToDelete.map(bon => bon.id) }
+      
+      await axios.delete('/api/deleteBCIs', {
+        data: { selectedRows }
       });
+      
       fetchBons();
     } catch (error) {
       console.error('Error deleting bons:', error);
     }
   };
+
+  //handle EDIT BCIs
   const handleEditBCI = () => {
-    if (selectedRows.length === 1) {
-      const selectedRow = bons.find(bon => bon.id === selectedRows[0]);
+    const bonsWithProgress = bons.filter(bon => bon.id === parseInt(selectedRows) && bon.isSeenByRSR === 1);
+    if (bonsWithProgress.length > 0) {
+      alert(`the selected bon has already treated by RSR and can't be edited`);
+      return ;
+    }
+    if (selectedRowForEdit.length === 1) {
+     
       setShowEditBCI (true);
-      setSelectedRowForEdit(selectedRow);
+      
      
     } else {
-      // Show error message or handle the case where more than one row is selected
+      alert('Please select a single row to edit');
     }
   };
 
   return (
     <>
-    {!ShowAddBCI && !EditAddBCI && (
+    {!ShowAddBCI && !showEditBCI && (
       <>
         <div className="flex text-center text-2xl m-2 font-medium justify-center">
           Bons De Commande Interne
@@ -166,7 +175,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
       </>
     )}
     {ShowAddBCI && <AddBCI goBack={handleGoBack} />}
-    {/* {showEditBCIsetShowAddBCI && <EditBCI selectedRow={selectedRowForEdit} goBack={handleGoBack} />} */}
+     {showEditBCI && <EditBCI selectedBCIRow={selectedRowForEdit[0]} goBack={handleGoBack} />} 
   </>
   
   );

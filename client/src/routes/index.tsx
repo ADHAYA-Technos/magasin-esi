@@ -5,6 +5,8 @@ import adminRoutes from "./appRoutes.tsx";
 import serviceAchatsRoutes from "./asaRoutes.tsx";
 import consommateurRoutes from "./consommateurRoutes.tsx";
 import magasinierRoutes from "./magasinierRoutes.tsx";
+import rsrRoutes from "./rsrRoutes.tsx";
+import directorRoutes from "./directorRoutes.tsx";
 import { RouteType } from "./config";
 import React from "react";
 
@@ -42,5 +44,7 @@ export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
 export const  CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
 
+export const  RSR: ReactNode = generateRoute(rsrRoutes);
+export const DIRECTOR: ReactNode = generateRoute(directorRoutes);
 
 
