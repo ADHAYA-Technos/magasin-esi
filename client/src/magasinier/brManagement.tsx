@@ -8,12 +8,13 @@ import EditIcon from '@mui/icons-material/Edit';
 import NavigationIcon from '@mui/icons-material/Navigation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCE from './Forms/AddBR.tsx';
-import EditBCE from './Forms/EditBR.tsx';
+import EditBCE from './Forms/AddBonRec.tsx';
 import { renderProgress } from '../render/renderProgress.tsx';
 import saveAs from 'file-saver';
 import Papa from 'papaparse';
-import EditBR from './Forms/EditBR.tsx';
+import AddBonRec from './Forms/AddBonRec.tsx';
 import AddBR from './Forms/AddBR.tsx';
+import EditBonRec from './Forms/EditBonRec.tsx';
 interface Bon {
   id: number;
   numChapitre: string;
@@ -32,11 +33,11 @@ interface BonRec {
 const BRManagement: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState<number>();
   const [selectedBCE, setSelectedBCE] = useState<Bon>();
-  const [selectedBRRows, setSelectedBRRows] = useState<number>([]);
+  const [selectedBRRows, setSelectedBRRows] = useState<BonRec[]>([]);
   const [bons, setBons] = useState<Bon[]>([]);
   const [bonsRec, setBonRec] = useState<BonRec[]>([]);
-  const [showAddBCE, setShowAddBCE] = useState<boolean>(false);
-  const [showEditBCE, setShowEditBCE] = useState<boolean>(false);
+  const [showAddBR, setShowAddBR] = useState<boolean>(false);
+  const [showEditBR, setShowEditBR] = useState<boolean>(false);
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon | null>(null);
   useEffect(() => {
     fetchBons();
@@ -70,21 +71,21 @@ const BRManagement: React.FC = () => {
   };
   //BR SELECTION CHANGE HANDLER
   const handleBRSelectionChange = (newSelection: GridRowId[]) => {
-    
     setSelectedBRRows(newSelection[0]); 
   };
   
     //BCE SELECTION CHANGE HANDLER
   const handleBCESelectionChange = (newSelection: GridRowId[]) => {
-    const selectedBCE = bons.find(bon => bon.bonId === newSelection[0]);
+   
+    const selectedBCE = bons.find(bon => bon.id === (newSelection[1]? newSelection[1]: newSelection[0]));
     setSelectedBCE(selectedBCE);
     // Get the new selected row ID
     const newSelectedBCEId = newSelection.length > 0 ? bons.find(bon => bon.id === newSelection[0])?.id : undefined;
   
     // If a different row is selected, fetch its BRs and clear the previous selection
-    if (newSelectedBCEId !== selectedRows) {
-      setSelectedRows(newSelectedBCEId);
-      fetchBonsRec(newSelectedBCEId);
+    if (newSelectedBCEId !== selectedBCE?.id) {
+      setSelectedRows(selectedBCE?.id);
+      fetchBonsRec(selectedBCE?.id);
       setBonRec([]); // Clear the BRs for the previous selection
     } else {
       // If the same row is clicked again, deselect it
@@ -138,43 +139,50 @@ const BRManagement: React.FC = () => {
     link.click();
   };
  
-  const handleAddBCE = () => {
-    setShowAddBCE(true);
+  const handleAddBR = () => {
+  
+    console.warn(selectedBCE);
+    console.warn(selectedBCE?.recieved);
+    if (!selectedBCE || !(selectedBCE?.recieved < 1.0) ) {
+      alert(!selectedBCE ? 'Please select a row' : 'BCE already received all orders');
+      return;
+    }
+    
+    setSelectedRowForEdit(selectedBCE);
+    setShowAddBR(true);
   };
 
   const handleGoBack = () => {
-    setShowAddBCE(false);
+    setShowAddBR(false);
+    setShowEditBR(false);
   };
-  const handleDeleteBons = async () => {
+  const handleDeleteBonRec = async () => {
+    const bonsToDelete = bonsRec.filter(bon => bon.id === selectedBRRows[0]?.id);
   
-    const bonsToDelete = bons.filter(bon => selectedRows.includes(bon.id));
- 
-    const bonsWithRecieved = bonsToDelete.filter(bon => bon.recieved > 0);
-    if (bonsWithRecieved.length > 0) {
-      const bonIds = bonsWithRecieved.map(bon => bon.id).join(', ');
-      const confirmDelete = window.confirm(`Bon ID: ${bonIds} has already started receiving orders. Do you want to proceed with deletion?`);
-      if (!confirmDelete) return;
-    }
     try {
-      await axios.delete('/api/deleteBons', {
+      await axios.delete('/api/deleteBonRec', {
         data: { bonIds: bonsToDelete.map(bon => bon.id) }
       });
-      fetchBons();
+  
+      alert("Bons deleted successfully!"); // Alert the user
+      window.location.reload(); // Refresh the page after deleting
     } catch (error) {
       console.error('Error deleting bons:', error);
     }
   };
-  const handleEditBCE = () => {
-    setSelectedRowForEdit(selectedRows);
-      setShowEditBCE(true);
-      
-      
-  
+  const handleEditBR = () => {
+    if(selectedBCE?.recieved == 1.0){
+      alert('BCE already received all orders you can not edit its BRs');
+      return;
+    }
+    console.log(selectedBRRows[0]);
+    setShowEditBR(true);
+   
   };
 
   return (
     <>
-    {!showAddBCE && !showEditBCE && (
+    {!showAddBR && !showEditBR && (
       <>
         <div className="flex text-center text-2xl m-2 font-medium justify-center">
           Bons De Commande Externes
@@ -185,7 +193,7 @@ const BRManagement: React.FC = () => {
             columns={columns}
             checkboxSelection
             onRowSelectionModelChange={handleBCESelectionChange}
-            rowSelectionModel={selectedRows }
+            rowSelectionModel={selectedBCE?.id}
             
             slots={
               
@@ -197,11 +205,12 @@ const BRManagement: React.FC = () => {
           />
         </div>
        
-        <button style={{ backgroundColor: 'green', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleEditBCE}>
+        <button style={{ backgroundColor: 'green', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleAddBR}>
       Add BR
     </button>
- 
-        <div className="flex text-center text-2xl m-2 font-medium justify-center">
+ {selectedRows && (
+  <>
+    <div className="flex text-center text-2xl m-2 font-medium justify-center">
           Bons De Reception
         </div>
         <div style={{ height: 400, width: '100%' }}>
@@ -210,25 +219,29 @@ const BRManagement: React.FC = () => {
   columns={BRcolumns}
   checkboxSelection
   onRowSelectionModelChange={handleBRSelectionChange}
-  rowSelectionModel={selectedBRRows ? [selectedBRRows] : []} 
+  rowSelectionModel={selectedBRRows ? [selectedBRRows[0]?.id] : []} 
   slots={{
     toolbar: CustomToolbar,
   }}
 />
         </div>
         <Box sx={{ '& > :not(style)': { m: 1 } }}>
-          <Fab color="secondary" aria-label="edit" onClick={handleEditBCE}>
+          <Fab color="secondary" aria-label="edit" onClick={handleEditBR}>
             <EditIcon />
           </Fab>
-          <Fab color="error" aria-label="delete" onClick={handleDeleteBons}>
+          <Fab color="error" aria-label="delete" onClick={handleDeleteBonRec}>
             <DeleteIcon />
           </Fab>
         </Box>
        
+  </>
+ )}
+      
       </>
     )}
-    {showAddBCE && <AddBR selectedRowIds={selectedRows} goBack={handleGoBack} />}
-    {showEditBCE && <EditBR selectedRow={selectedBCE} goBack={handleGoBack} />}
+
+    {showAddBR && <AddBonRec selectedRow={selectedBCE} goBack={handleGoBack} />}
+    {showEditBR && <EditBonRec selectedBRRow={selectedBRRows[0]} goBack={handleGoBack} />}
   </>
   
   );

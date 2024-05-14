@@ -470,19 +470,30 @@ export const createReceptionRows = (bonRecId, updatedCommandes) => {
   if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
     return Promise.reject("Products array is empty or not an array");
   }
-  
-  const values = updatedCommandes.map(updatedCommande => [bonRecId, updatedCommande.commandeId, updatedCommande.quantity]);
-  return new Promise((resolve, reject) => {
-    const query = 'INSERT INTO LigneReception (bonRecId, commandeId, quantity) VALUES ?';
-    connection.query(query, [values], (error, results) => {
-      if (error) {
-        reject(error);
-      } else {
-        resolve(results); // Resolve with the results of the insertion
-      }
+
+  // Create an array of promises for each update query
+  const updatePromises = updatedCommandes.map(updatedCommande => {
+    const { commandeId, quantity,left } = updatedCommande;
+    const ligneReceptionQuery = 'INSERT INTO LigneReception (bonRecId, commandeId, quantity) VALUES (?, ?, ?)';
+    const ligneReceptionValues = [bonRecId, commandeId, quantity];
+
+
+    // Execute the queries sequentially
+    return new Promise((resolve, reject) => {
+      connection.query(ligneReceptionQuery, ligneReceptionValues, (error, ligneReceptionResults) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(ligneReceptionValues);
+        }
+      });
     });
   });
+
+  // Execute all update queries concurrently
+  return Promise.all(updatePromises);
 };
+
 
 export const fetchBonRec = (bonId) => {
   return new Promise((resolve, reject) => {
@@ -500,4 +511,106 @@ export const fetchBonRec = (bonId) => {
   });
 };
 
-export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows};
+export const deleteBonRec = (bonIds) => {
+  return new Promise((resolve, reject) => {
+    if (!bonIds || bonIds.length === 0) {
+      // If bonIds array is empty or undefined, resolve without performing deletion
+      resolve();
+    } else {
+      connection.beginTransaction((error) => {
+        if (error) {
+          reject(error);
+        } else {
+          // Delete related commands first
+          connection.query('DELETE FROM ligneReception WHERE bonRecId IN (?)', [bonIds], (error, results) => {
+            if (error) {
+              connection.rollback(() => {
+                reject(error);
+              });
+            } else {
+              // If commands are deleted successfully, proceed to delete Bons
+              connection.query('DELETE FROM BonReception WHERE BonRecId IN (?)', [bonIds], (error, results) => {
+                if (error) {
+                  connection.rollback(() => {
+                    reject(error);
+                  });
+                } else {
+                  // Commit the transaction if everything is successful
+                  connection.commit((error) => {
+                    if (error) {
+                      connection.rollback(() => {
+                        reject(error);
+                      });
+                    } else {
+                      resolve(); // Resolve without any data (successful deletion)
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+};
+
+export const fetchReceptionsByBonRec = (id, callback) => {
+  connection.query(
+    `SELECT rec.ligneRecId, p.designation, rec.quantity, co.commandeId, co.leftQuantity,co.quantity as demandedQuantity
+    FROM Commande co
+    JOIN Products p ON co.productId = p.productId
+    Join LigneReception rec ON rec.commandeId = co.commandeId
+    WHERE rec.BonRecId = ?`,
+    [id],
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const updateBonRec = (bonRecId,dateCreation) => {
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('UPDATE BonReception SET dateCreation = ? where bonRecId = ?',
+      [dateCreation,bonRecId],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+};
+
+export const  updateReceptionRows = (bonRecId, updatedCommandes) => {
+  if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
+
+  // Create an array of promises for each update query
+  const updatePromises = updatedCommandes.map(updatedCommande => {
+    const { commandeId, quantity } = updatedCommande;
+    const ligneReceptionQuery = 'UPDATE LigneReception set  quantity = ? WHERE bonRecId = ? AND commandeId = ?';
+    const ligneReceptionValues = [quantity,bonRecId, commandeId];
+
+
+    // Execute the queries sequentially
+    return new Promise((resolve, reject) => {
+      connection.query(ligneReceptionQuery, ligneReceptionValues, (error, ligneReceptionResults) => {
+        if (error) {
+          reject(error);
+        } else {
+          console.log(ligneReceptionValues);
+          resolve(ligneReceptionValues);
+        }
+      });
+    });
+  });
+};
+export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows,deleteBonRec,updateReceptionRows};
