@@ -184,6 +184,7 @@ const ProductsManagement: React.FC = () => {
       
       // Handle error as needed
     }
+    window.confirm('Product associated successfully to Article ID: ' + selectedArticle)
       
   };
   const handleUpdateProduct = (id: GridRowId) => {
