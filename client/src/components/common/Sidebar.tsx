@@ -41,8 +41,7 @@ const Sidebar = (props: RouteType[]) => {
           <Avatar src={assets.image.logo} />
         </Stack>
       </Toolbar>
-      {/* Sidebar items */}
-     
+      
       {magasinierRoutes.map((route, index) => (
         route.sidebarProps ? (
           route.child ? (

@@ -63,6 +63,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
     setEntered(updatedEntered);
   };
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  
   setEnteredAtIndex(index);
     const { value } = event.target;
     const parsedValue = parseFloat(value);
@@ -85,16 +86,15 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
   const handleSaveChanges = async () => {
     try {
       // Prepare updated commandes data
-      const updatedCommandes = products.map((product) => ({
+      const updatedCommandes = products.map((product , index) => ({
         commandeId: product.commandeId,
-        quantity: product.deliveredQuantity,
-        left : product.leftQuantity -product.deliveredQuantity,
+        quantity:entered[index]? product.deliveredQuantity:0,
         dateCreation : formattedDate 
        
       }));
 
       
-     console.log(updatedCommandes);
+     
       await axios.put(`/api/bonRec/${bonData.bonId}`, {
         updatedCommandes
       });

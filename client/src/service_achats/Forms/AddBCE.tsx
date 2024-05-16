@@ -440,6 +440,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
           <label className="block text-gray-700 text-sm font-bold mt-4 mb-2">Price:</label>
           <input
             type="number"
+            min={0}
             value={orderRecipient.prices[index]}
             onChange={(event) => handlePriceChange(index, event)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
@@ -447,6 +448,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
           <label className="block text-gray-700 text-sm font-bold mt-4 mb-2">Quantity:</label>
           <input
             type="number"
+            min={0}
             value={orderRecipient.quantities[index]}
             onChange={(event) => handleQuantityChange(index, event)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"

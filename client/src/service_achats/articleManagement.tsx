@@ -16,6 +16,7 @@ type Article = {
   articleId: number;
   designation: string;
   code:string;
+  TVA :   number;
 };
 
 type Props = {};
@@ -31,6 +32,7 @@ const ArticleManagement: React.FC<Props> = () => {
     articleId:0,
     designation: '',
     code:'',
+    TVA : 0  
    
   });
   useEffect(() => {
@@ -54,7 +56,8 @@ const ArticleManagement: React.FC<Props> = () => {
   const columns: GridColDef[] = [
     { field: 'articleId', headerName: 'ID', width: 70 },
     { field: 'designation', headerName: 'Designation', width: 450 },
-    { field: 'code', headerName: 'Code', width: 200 }
+    { field: 'code', headerName: 'Code', width: 200 },
+    { field: 'TVA', headerName: 'TVA %', width: 200 }
   ];
 
   const handleChapitreSelection = (chapitreId: number) => {
@@ -89,17 +92,31 @@ const ArticleManagement: React.FC<Props> = () => {
   };
   
   const handleCloseDialog = () => {
+    setNewArticle({
+      articleId: 0,
+      designation: '',
+      code: selectedChapitre ? chapitres.find(chapitre => chapitre.chapitreId === selectedChapitre)?.numChapitre || '' : '',
+            TVA : 0
+    });
+    setEditedArticle({
+      articleId: 0,
+      designation: '',
+      code:'',
+      TVA : 0
+    });
     setOpenDialog(false);
+
   };
 
   const handleDialogSubmit = async () => {
     try {
-      if (editedArticle) {
+      if (editedArticle && editedArticle.TVA >= 0 && editedArticle.TVA <= 100 && editedArticle.designation && editedArticle.code) {
         await axios.put('/api/editArticle', {
 
           articleId: editedArticle.articleId,
           designation: editedArticle.designation,
           code: editedArticle.code,
+          TVA : editedArticle.TVA / 100,
           
         });
         const updatedArticles = articles.map(article =>
@@ -107,12 +124,23 @@ const ArticleManagement: React.FC<Props> = () => {
          
         );
         setArticles(updatedArticles);
-      } else {
+      }else if(editedArticle){
+        !editedArticle.TVA ?alert("TVA must be between 0 and 100"):alert("Please enter all champs")
+      }
+      
+      
+      
+      
+      else
+      if(newArticle.TVA && newArticle.TVA>=0 && newArticle.TVA<100 && newArticle.code && newArticle.designation)
+      {
         const response = await axios.post('/api/createArticle', {
           chapitreId:selectedChapitre,
           designation: newArticle.designation,
           code : newArticle.code,
+          TVA : newArticle.TVA/100,
         });
+
         
         const newArticleeWithId = {
          ...newArticle,
@@ -123,6 +151,9 @@ const ArticleManagement: React.FC<Props> = () => {
         };
     
         setArticles([...articles, newArticleeWithId]);
+      }else 
+      {
+        !newArticle.TVA ?alert("TVA must be between 0 and 100"):alert("Please enter all champs")
       }
       // Reset state and close dialog
       setOpenDialog(false);
@@ -131,6 +162,7 @@ const ArticleManagement: React.FC<Props> = () => {
         articleId: 0,
         designation: '',
         code:'',
+        TVA : 0
       });
     } catch (error) {
       console.error('Error submitting Article:', error);
@@ -154,6 +186,11 @@ const ArticleManagement: React.FC<Props> = () => {
   };
 
   const handleAddChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === 'TVA' && parseInt(e.target.value)<0 || parseInt(e.target.value)>100) {
+      e.target.value ='19';
+      alert('TVA should be greater than 0 and inferior than 100')
+      return ;
+    } 
     const { name, value } = e.target;
     setNewArticle(prevState => ({
       ...prevState,
@@ -162,7 +199,13 @@ const ArticleManagement: React.FC<Props> = () => {
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === 'TVA' && parseInt(e.target.value)<0 || parseInt(e.target.value)>100) {
+      e.target.value ='19';
+      alert('TVA should be greater than 0 and inferior than 100')
+      return ;
+    } 
     const { name, value } = e.target;
+    
     setEditedArticle(prevState => ({
       ...prevState,
       [name]: value,
@@ -207,7 +250,7 @@ const ArticleManagement: React.FC<Props> = () => {
           <DeleteIcon />
         </Fab>
       </Box>
-      <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <Dialog open={openDialog} onClose={handleCloseDialog} >
         <DialogTitle>{editedArticle ? 'Edit Article' : 'Add Article'}</DialogTitle>
         <DialogContent>
         <TextField
@@ -227,6 +270,17 @@ const ArticleManagement: React.FC<Props> = () => {
   type="text"
   name="code"
   value={editedArticle ? editedArticle.code : newArticle.code}
+  onChange={editedArticle ?handleEditChange:handleAddChange}
+  fullWidth
+/>
+<TextField
+  autoFocus
+  margin="dense"
+  label="TVA %"
+  type="number"
+  name="TVA"
+  
+  value={editedArticle ? editedArticle.TVA : newArticle.TVA }
   onChange={editedArticle ?handleEditChange:handleAddChange}
   fullWidth
 />

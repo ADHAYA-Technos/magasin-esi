@@ -8,7 +8,12 @@ import {
   DialogContent,
   DialogTitle,
   Fab,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
   TextField,
+  Typography,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -17,6 +22,7 @@ import axios from "axios";
 type Product = {
   productId: number;
   designation: string;
+  seuilMin : number;
   
 };
 
@@ -26,14 +32,16 @@ const ProductsManagement: React.FC = () => {
   const [articles, setArticles] = useState([]);
   const [selectedArticle, setSelectedArticle] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [articleProducts, setArticleProducts] = useState<Product[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newProduct, setNewProduct] = useState<Product>({
     productId: 0,
     designation: "",
+    seuilMin : 0,
   });
   const [editedProduct, setEditedProduct] = useState<Product | null>(null);
   const [selectedRows, setSelectedRows] = useState<GridRowId[]>([]);
-
+  const [selectedAPRows, setSelectedAPRows] = useState<GridRowId[]>([]);
   useEffect(() => {
     fetch("/api/chapitres")
       .then((response) => response.json())
@@ -58,9 +66,7 @@ const ProductsManagement: React.FC = () => {
   }, [selectedChapitre]);
 
   useEffect(() => {
-    // Fetch products based on selectedArticle from /api/products/:articleId
-    if (selectedArticle) {
-      fetch(`/api/products/${selectedArticle}`)
+    fetch(`/api/products`)
         .then((response) => response.json())
         .then((data) => {
           // Map through the data array and add id as productId to each product
@@ -71,11 +77,30 @@ const ProductsManagement: React.FC = () => {
           setProducts(productsWithIds);
         })
         .catch((error) => console.error("Error fetching products:", error));
+   
+    // Fetch products based on selectedArticle from /api/products/:articleId
+    if (selectedArticle) {
+   
+      fetch(`/api/products/${selectedArticle}`)
+      .then((response) => response.json())
+      .then((data) => {
+        // Map through the data array and add id as productId to each product
+        const productsWithIds = data.map((product) => ({
+          ...product,
+          id: product.productId, // Assuming productId starts from 1
+        }));
+        setArticleProducts(productsWithIds);
+      })
+      .catch((error) => console.error("Error fetching products:", error));
     }
   }, [selectedArticle]);
 
   const handleSelectionChange = (newSelection: GridRowId[]) => {
     setSelectedRows(newSelection);
+  };
+
+  const handleAPSelectionChange = (newSelection: GridRowId[]) => {
+    setSelectedAPRows(newSelection);
   };
 
   const handleChapitreChange = (
@@ -88,7 +113,9 @@ const ProductsManagement: React.FC = () => {
   const handleArticleChange = (
     event: React.ChangeEvent<{ value: unknown }>
   ) => {
+    
     setSelectedArticle(event.target.value as string);
+    
   };
 
   const handleDialogSubmit = async () => {
@@ -99,7 +126,7 @@ const ProductsManagement: React.FC = () => {
 
           productId : editedProduct.productId ,
           designation: editedProduct.designation,
-         
+         seuilMin : editedProduct.seuilMin
           
         });
         const updatedProducts = products.map(product =>
@@ -112,6 +139,7 @@ const ProductsManagement: React.FC = () => {
         const response = await axios.post('/api/addProduct', {
           articleId: articles.find(article => article.articleId === Number(selectedArticle))?.articleId,
           designation: newProduct.designation,
+          seuilMin : newProduct.seuilMin
         });
         const newProductWithId = {
          ...newProduct,
@@ -125,7 +153,8 @@ const ProductsManagement: React.FC = () => {
       setEditedProduct(null);
       setNewProduct({
         productId: 0,
-        designation: ''
+        designation: '',
+        seuilMin : 0,
       });
     } catch (error) {
       console.error('Error submitting Product:', error);
@@ -133,7 +162,30 @@ const ProductsManagement: React.FC = () => {
     }
   };
 
-  
+  const handleProductAssociation = async ( ) => {
+    const alreadyAssociated = selectedRows.some(productId => 
+      articleProducts.some(ap => ap.productId === productId)
+    );
+    if(alreadyAssociated){
+      alert("Product already associated with the article");
+      return;
+    }else if (selectedRows.length === 0){
+
+      alert("Please select at least one product ");
+      return;
+    }
+    try {
+
+      const response = await axios.put('/api/associateProduct', { selectedId: selectedRows , selectedArticle });
+      
+      setArticleProducts([...articleProducts, ...products.filter(product => selectedRows.includes(product.productId))]);
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      
+      // Handle error as needed
+    }
+      
+  };
   const handleUpdateProduct = (id: GridRowId) => {
     if(selectedRows.length === 1){
       const selectedProduct = products.find(product => product.productId === selectedRows[0]);
@@ -173,7 +225,15 @@ const ProductsManagement: React.FC = () => {
     { field: "quantity", headerName: "Quantity en stock", width: 250 },
   ];
 
+  
+
+
   const handleAddChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === 'seuilMin' && parseInt(e.target.value)<0 ) {
+      e.target.value ='20';
+      alert('seuilMin should be greater or equal  0 ')
+      return ;
+    } 
     const { name, value } = e.target;
     setNewProduct(prevState => ({
       ...prevState,
@@ -182,6 +242,11 @@ const ProductsManagement: React.FC = () => {
   };
 
   const handleEditChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.name === 'seuilMin' && parseInt(e.target.value)<0 ) {
+     
+      alert('seuilMin should be greater or equal than 0')
+      return ;
+    } 
     const { name, value } = e.target;
     setEditedProduct(prevState => ({
       ...prevState,
@@ -189,125 +254,173 @@ const ProductsManagement: React.FC = () => {
     }));
   };
 
+  const handleCloseDialog = () => {
+    setNewProduct({
+        productId: 0,
+        designation: '',
+        seuilMin : 0,
+      });
+    
+
+    setEditedProduct({
+      productId: 0,
+      designation: '',
+      seuilMin : 0,
+    });
+    setOpenDialog(false);
+
+  };
   return (
     <div>
-      <label>Select a chapitre:</label>
-      <select value={selectedChapitre} onChange={handleChapitreChange}>
-        <option value="">-- Select Chapitre --</option>
-        {chapitres.map((chapitre: any) => (
-          <option key={chapitre.chapitreId} value={chapitre.chapitreId}>
+    <FormControl fullWidth variant="outlined" margin="normal">
+      <InputLabel id="chapitre-label">Select a Chapitre</InputLabel>
+      <Select
+        labelId="chapitre-label"
+        value={selectedChapitre}
+        onChange={handleChapitreChange}
+        label="Select a Chapitre"
+      >
+        <MenuItem value="">
+          <em>-- Select Chapitre --</em>
+        </MenuItem>
+        {chapitres.map((chapitre) => (
+          <MenuItem key={chapitre.chapitreId} value={chapitre.chapitreId}>
             {chapitre.libelle}
-          </option>
+          </MenuItem>
         ))}
-      </select>
-
-      {selectedChapitre && (
-        <>
-          <label>Select an article:</label>
-          <select value={selectedArticle} onChange={handleArticleChange}>
-            <option value="">-- Select Article --</option>
-            {articles.map((article: any) => (
-              <option key={article.articleId} value={article.articleId}>
-                {article.designation}
-              </option>
-            ))}
-          </select>
-        </>
-      )}
-
-      {selectedArticle && (
-        <div style={{ height: 400, width: "100%" }}>
-          <DataGrid
-            rows={products}
-            columns={columns}
-            pageSize={5}
-            components={{
-              Toolbar: GridToolbar,
-            }}
-            onRowSelectionModelChange={handleSelectionChange}
-            rowSelectionModel={selectedRows}
-            checkboxSelection
-          />
-        </div>
-      )}
-
-      <Box sx={{ "& > :not(style)": { m: 1 } }}>
-        <Fab
-          color="primary"
-          aria-label="add"
-          onClick={() => setOpenDialog(true)}
+      </Select>
+    </FormControl>
+  
+    {selectedChapitre && (
+      <FormControl fullWidth variant="outlined" margin="normal">
+        <InputLabel id="article-label">Select an Article</InputLabel>
+        <Select
+          labelId="article-label"
+          value={selectedArticle}
+          onChange={handleArticleChange}
+          label="Select an Article"
         >
-          <AddIcon />
-        </Fab>
-        <Fab
-          color="secondary"
-          aria-label="edit"
-          onClick={() => handleUpdateProduct(selectedArticle)}
-        >
-          <EditIcon />
-        </Fab>
-        <Fab
-          color="error"
-          aria-label="delete"
-          onClick={() => handleDeleteProduct(selectedArticle)}
-        >
-          <DeleteIcon />
-        </Fab>
-      </Box>
-
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-        <DialogTitle>
-          {editedProduct ? "Edit Product" : "Add Product"}
-        </DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Chapitre"
-            type="text"
-            name="chapitre"
-            value={
-              chapitres.find(
-                (chapitre) => chapitre.chapitreId === Number(selectedChapitre)
-              )?.libelle || ""
-            }
-            disabled
-            fullWidth
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Article"
-            type="text"
-            name="article"
-            value={
-              articles.find(
-                (article) => article.articleId === Number(selectedArticle)
-              )?.designation
-            }
-            disabled
-            fullWidth
-          />
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Designation"
-            type="text"
-            name="designation"
-            value={editedProduct?editedProduct.designation:newProduct.designation}
-            
-            onChange={editedProduct?handleEditChange:handleAddChange}
-            fullWidth
-          />
-   
+          <MenuItem value="">
+            <em>-- Select Article --</em>
+          </MenuItem>
+          {articles.map((article) => (
+            <MenuItem key={article.articleId} value={article.articleId}>
+              {article.designation}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+    )}
+  
+    {selectedArticle && (
+      <div style={{ height: 400, width: '100%', marginTop: '16px' }}>
+        <DataGrid
+          rows={articleProducts}
+          columns={columns}
+          pageSize={5}
+          components={{
+            Toolbar: GridToolbar,
+          }}
+          onRowSelectionModelChange={handleAPSelectionChange}
+          rowSelectionModel={selectedAPRows}
+          checkboxSelection
+        />
+      </div>
+    )}
+  
+    <Dialog open={openDialog} onClose={handleCloseDialog}>
+      <DialogTitle>{editedProduct ? 'Edit Product' : 'Add Product'}</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Chapitre"
+          type="text"
+          name="chapitre"
+          value={
+            chapitres.find((chapitre) => chapitre.chapitreId === Number(selectedChapitre))?.libelle || ''
+          }
+          disabled
+          fullWidth
+        />
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Article"
+          type="text"
+          name="article"
+          value={
+            articles.find((article) => article.articleId === Number(selectedArticle))?.designation
+          }
+          disabled
+          fullWidth
+        />
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Designation"
+          type="text"
+          name="designation"
+          value={editedProduct ? editedProduct.designation : newProduct.designation}
+          onChange={editedProduct ? handleEditChange : handleAddChange}
+          fullWidth
+        />
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Seuil Minimum en stock"
+          type="number"
+          name="seuilMin"
+          value={editedProduct ? editedProduct.seuilMin : newProduct.seuilMin}
+          onChange={editedProduct ? handleEditChange : handleAddChange}
+          fullWidth
+        />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+        <Button onClick={handleCloseDialog}>Cancel</Button>
         <Button onClick={handleDialogSubmit} color="primary">
           {editedProduct ? 'Save' : 'Add'}
         </Button>
       </DialogActions>
     </Dialog>
+  
+    <Typography variant="h6" gutterBottom>
+      All Products
+    </Typography>
+    <div style={{ height: 400, width: '100%', marginTop: '16px' }}>
+      <DataGrid
+        rows={products}
+        columns={columns}
+        pageSize={5}
+        components={{
+          Toolbar: GridToolbar,
+        }}
+        onRowSelectionModelChange={handleSelectionChange}
+        rowSelectionModel={selectedRows}
+        checkboxSelection
+      />
+    </div>
+  
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: '16px' }}>
+      {selectedRows.length > 0 && (
+        <Button
+          variant="contained"
+          color="success"
+          onClick={handleProductAssociation}
+        >
+          Associate Product
+        </Button>
+      )}
+      <Fab color="primary" aria-label="add" onClick={() => setOpenDialog(true)}>
+        <AddIcon />
+      </Fab>
+      <Fab color="secondary" aria-label="edit" onClick={() => handleUpdateProduct(selectedArticle)}>
+        <EditIcon />
+      </Fab>
+      <Fab color="error" aria-label="delete" onClick={() => handleDeleteProduct(selectedArticle)}>
+        <DeleteIcon />
+      </Fab>
+    </Box>
   </div>
   );
 };

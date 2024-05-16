@@ -10,7 +10,7 @@ import RoleRoute from "./routes/roleRoute.js"
 import Database from "./config/Database.js";
 import AuthRoutes from "./routes/authRoutes.js"
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails, createBciRows, createBCI, fetchLigneBCIByBonRec, deleteBCIs, updateBCIRows, updateBCI} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails, createBciRows, createBCI, fetchLigneBCIByBonRec, deleteBCIs, updateBCIRows, updateBCI, associateProduct} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
 dotenv.config();
@@ -204,8 +204,10 @@ app.get('/api/fournisseurs', async (req, res) => {
 app.get('/api/products/:articleId', async (req, res) => {
   try {
       const articleId = req.params.articleId;
+      
       fetchProductsByArticle(articleId, (error, results) => {
           if (!error) {
+           
               res.json(results);
           } else {
               console.error("Error fetching fournisseurs:", error);
@@ -356,9 +358,10 @@ app.put('/api/deleteChapitre', async (req, res) => {
 app.post('/api/createArticle', async (req, res) => {
   
   const { chapitreId,designation,code } = req.body;
-  
+  console.log(req.body);
+  const TVA =req.body.TVA ;
   try {
-    const article = await createArticle( chapitreId,designation,code);
+    const article = await createArticle( chapitreId,designation,code,TVA);
     res.status(201).json( article );
   } catch (error) {
     console.error('Error creating Article:', error);
@@ -370,10 +373,10 @@ app.put('/api/editArticle', async (req, res) => {
   const articleId = req.body.articleId;
   const designation= req.body.designation;
   const code= req.body.code;
-
+  const TVA =req.body.TVA ;
 
   try {
-    await updateArticle(articleId, designation, code); 
+    await updateArticle(articleId, designation, code,TVA); 
     res.status(200).json({ message: 'Article updated successfully' });
   } catch (error) {
     console.error('Error updating Article:', error);
@@ -395,10 +398,10 @@ app.put('/api/deleteArticle', async (req, res) => {
 });
 
 app.post('/api/addProduct', async (req, res) => {
-  const {articleId,designation} = req.body;
+  const {articleId,designation,seuilMin} = req.body;
   try {
    
-    const addedProduct = await addProduct(articleId, designation);
+    const addedProduct = await addProduct(articleId, designation,seuilMin);
     res.status(201).json(addedProduct);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -410,11 +413,11 @@ app.post('/api/addProduct', async (req, res) => {
 app.put('/api/editProduct', async (req, res) => {
   const productId = req.body.productId;
   const designation= req.body.designation;
-  
+  const seuilMin= req.body.seuilMin;
 console.log(req.body);
   try {
    
-    const updatedProduct = await updateProduct(productId, designation);
+    const updatedProduct = await updateProduct(productId, designation,seuilMin);
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -435,6 +438,19 @@ try {
   }
 });
 
+app.put('/api/associateProduct', async (req, res) => {
+
+  const selectedId = req.body.selectedId; 
+  const selectedArticle =  req.body.selectedArticle; 
+ 
+  try {
+      await associateProduct(selectedId,selectedArticle); 
+      res.status(200).json({ message: 'products Associated successfully' });
+    } catch (error) {
+      console.error('Error updating products:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 app.get('/api/products', async (req, res) => {
   try {
       fetchProducts((error, results) => {
@@ -454,6 +470,7 @@ app.get('/api/products', async (req, res) => {
 app.put('/api/bonRec/:bonId', async (req, res) => {
   const bonId = req.params.bonId;
   const updatedCommandes = req.body.updatedCommandes;
+ 
   const dateCreation=updatedCommandes[0].dateCreation;
 
 

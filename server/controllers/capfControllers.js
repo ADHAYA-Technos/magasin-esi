@@ -20,10 +20,12 @@ export const fetchChapitres = (callback) => {
     });
 };
 export const fetchArticlesByChapitre = (chapitreIdOrNumChapitre, callback) => {
-  connection.query('SELECT A.articleId, A.designation, A.code FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
+  connection.query('SELECT A.articleId, A.designation, A.code,ROUND(A.TVA * 100, 2)  AS TVA FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
     
       if (!error) {
+        
           callback(null, results); 
+          console.log(results );
       } else {
           callback(error); 
       }
@@ -44,7 +46,7 @@ export const fetchFournisseurs = ( callback) => {
 };
 export const fetchProductsByArticle = (articleId, callback) => {
     connection.query(
-        'SELECT productId ,designation FROM Products  WHERE articleId = ?',
+        'SELECT p.productId ,p.designation,p.quantityPhysique FROM Products p join articles_products ap on p.productId = ap.productId where ap.articleId = ?',
         [articleId],
         (error, results) => {
             if (!error) {
@@ -346,11 +348,11 @@ export const deleteChapitre = (selectedId) => {
 };
 
 //UPDATE Article
-export const updateArticle = (articleId, designation, code) => {
+export const updateArticle = (articleId, designation, code,TVA) => {
   return new Promise((resolve, reject) => {
     connection.query(
-      'UPDATE Articles SET designation = ?, code = ? WHERE articleId = ?',
-      [designation, code, articleId],
+      'UPDATE Articles SET designation = ?, code = ? ,TVA=? WHERE articleId = ?',
+      [designation, code,TVA, articleId],
       (error, results) => {
         if (error) {
           reject(error);
@@ -363,10 +365,10 @@ export const updateArticle = (articleId, designation, code) => {
 };
 
 // Function to create a new chapitre
-export const createArticle = ( chapitreId,designation,code) => {
+export const createArticle = ( chapitreId,designation,code,TVA) => {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO Articles (chapitreId,designation,code) VALUES (?, ?,?)',
-      [chapitreId,designation,code],
+    connection.query('INSERT INTO Articles (chapitreId,designation,code,TVA) VALUES (?, ?,?,?)',
+      [chapitreId,designation,code,TVA],
       (error, results) => {
         if (error) {
           reject(error);
@@ -394,9 +396,9 @@ export const deleteArticle = (selectedId) => {
 
 
 // Function to add a new product
-export const addProduct = (articleId, designation) => {
+export const addProduct = (articleId, designation,seuilMin) => {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO Products (articleId,designation) values (?,?)', [articleId, designation], (error, result) => {
+    connection.query('INSERT INTO Products (articleId,designation,seuilMin) values (?,?,?)', [articleId, designation,seuilMin], (error, result) => {
       if (error) {
         reject(error);
       } else {
@@ -407,9 +409,9 @@ export const addProduct = (articleId, designation) => {
 };
 
 // Function to update an existing product
-export const updateProduct = (productId, designation) => {
+export const updateProduct = (productId, designation,seuilMin) => {
   return new Promise((resolve, reject) => {
-    connection.query('UPDATE Products SET designation = ? WHERE productId = ?', [designation, productId], (error, result) => {
+    connection.query('UPDATE Products SET designation = ? , seuilMin = ? WHERE productId = ?', [designation,seuilMin, productId], (error, result) => {
       if (error) {
         reject(error);
       } else {
@@ -432,6 +434,28 @@ export const deleteProduct = (selectedId) => {
       });
     });
     
+  });
+};
+
+// Function to Associate a products
+export const associateProduct = (selectedId, selectedArticle) => {
+  return new Promise((resolve, reject) => {
+
+    const queries = selectedId.map(id => {
+      return new Promise((resolve, reject) => {
+        connection.query('INSERT INTO articles_products (articleId, productId) VALUES (?, ?)', [selectedArticle, id], (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        });
+      });
+    });
+
+    Promise.all(queries)
+      .then(results => resolve(results))
+      .catch(error => reject(error));
   });
 };
 
