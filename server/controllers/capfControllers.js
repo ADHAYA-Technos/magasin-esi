@@ -20,10 +20,12 @@ export const fetchChapitres = (callback) => {
     });
 };
 export const fetchArticlesByChapitre = (chapitreIdOrNumChapitre, callback) => {
-  connection.query('SELECT A.articleId, A.designation, A.code FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
+  connection.query('SELECT A.articleId, A.designation, A.code,ROUND(A.TVA * 100, 2)  AS TVA FROM Articles A JOIN Chapitres C ON A.chapitreId = C.chapitreId WHERE A.chapitreId = ? OR C.numChapitre = ?', [chapitreIdOrNumChapitre, chapitreIdOrNumChapitre], (error, results) => {
     
       if (!error) {
+        
           callback(null, results); 
+          console.log(results );
       } else {
           callback(error); 
       }
@@ -44,7 +46,7 @@ export const fetchFournisseurs = ( callback) => {
 };
 export const fetchProductsByArticle = (articleId, callback) => {
     connection.query(
-        'SELECT productId ,designation FROM Products  WHERE articleId = ?',
+        'SELECT p.productId ,p.designation,p.quantityPhysique FROM Products p join articles_products ap on p.productId = ap.productId where ap.articleId = ?',
         [articleId],
         (error, results) => {
             if (!error) {
@@ -346,11 +348,11 @@ export const deleteChapitre = (selectedId) => {
 };
 
 //UPDATE Article
-export const updateArticle = (articleId, designation, code) => {
+export const updateArticle = (articleId, designation, code,TVA) => {
   return new Promise((resolve, reject) => {
     connection.query(
-      'UPDATE Articles SET designation = ?, code = ? WHERE articleId = ?',
-      [designation, code, articleId],
+      'UPDATE Articles SET designation = ?, code = ? ,TVA=? WHERE articleId = ?',
+      [designation, code,TVA, articleId],
       (error, results) => {
         if (error) {
           reject(error);
@@ -363,10 +365,10 @@ export const updateArticle = (articleId, designation, code) => {
 };
 
 // Function to create a new chapitre
-export const createArticle = ( chapitreId,designation,code) => {
+export const createArticle = ( chapitreId,designation,code,TVA) => {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO Articles (chapitreId,designation,code) VALUES (?, ?,?)',
-      [chapitreId,designation,code],
+    connection.query('INSERT INTO Articles (chapitreId,designation,code,TVA) VALUES (?, ?,?,?)',
+      [chapitreId,designation,code,TVA],
       (error, results) => {
         if (error) {
           reject(error);
@@ -394,9 +396,9 @@ export const deleteArticle = (selectedId) => {
 
 
 // Function to add a new product
-export const addProduct = (articleId, designation) => {
+export const addProduct = (articleId, designation,seuilMin) => {
   return new Promise((resolve, reject) => {
-    connection.query('INSERT INTO Products (articleId,designation) values (?,?)', [articleId, designation], (error, result) => {
+    connection.query('INSERT INTO Products (articleId,designation,seuilMin) values (?,?,?)', [articleId, designation,seuilMin], (error, result) => {
       if (error) {
         reject(error);
       } else {
@@ -407,9 +409,9 @@ export const addProduct = (articleId, designation) => {
 };
 
 // Function to update an existing product
-export const updateProduct = (productId, designation) => {
+export const updateProduct = (productId, designation,seuilMin) => {
   return new Promise((resolve, reject) => {
-    connection.query('UPDATE Products SET designation = ? WHERE productId = ?', [designation, productId], (error, result) => {
+    connection.query('UPDATE Products SET designation = ? , seuilMin = ? WHERE productId = ?', [designation,seuilMin, productId], (error, result) => {
       if (error) {
         reject(error);
       } else {
@@ -432,6 +434,28 @@ export const deleteProduct = (selectedId) => {
       });
     });
     
+  });
+};
+
+// Function to Associate a products
+export const associateProduct = (selectedId, selectedArticle) => {
+  return new Promise((resolve, reject) => {
+
+    const queries = selectedId.map(id => {
+      return new Promise((resolve, reject) => {
+        connection.query('INSERT INTO articles_products (articleId, productId) VALUES (?, ?)', [selectedArticle, id], (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results);
+          }
+        });
+      });
+    });
+
+    Promise.all(queries)
+      .then(results => resolve(results))
+      .catch(error => reject(error));
   });
 };
 
@@ -613,4 +637,210 @@ export const  updateReceptionRows = (bonRecId, updatedCommandes) => {
     });
   });
 };
-export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows,deleteBonRec,updateReceptionRows};
+
+
+export const fetchBCIsWithDetails = (callback) => {
+  connection.query(`
+    SELECT * from bci
+  `, (error, results) => {
+    if (!error) {
+      callback(null, results);
+    } else {
+      callback(error);
+    }
+  });
+};
+
+export const createBCI= (type,dateCreation) => {
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('INSERT INTO bci (typee,dateCreation,isSeenByRSR,isSeenByMag ,isSeenByDR) VALUES (?,?,?,?,?)',
+      [type,dateCreation,0,0,0],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+};
+
+//create BCI Rows
+export const createBciRows = (products) => {
+  if (!Array.isArray(products) || products.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
+  
+  const values = products.map(product => [product.bonId, product.productId, product.quantity]);
+  return new Promise((resolve, reject) => {
+    connection.query('INSERT INTO lignebci (bciId, productId, quantity) VALUES ?', [values],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results); // Resolve with the results of the insertion
+        }
+      });
+  });
+};
+
+
+export const fetchLigneBCIByBonRec = (id, callback) => {
+  connection.query(
+    `SELECT  p.productId , p.designation, lignebci.quantity as demandedQuantity , p.quantityPhysique , p.seuilMin
+    FROM lignebci 
+    JOIN Products p ON lignebci.productId = p.productId
+    WHERE lignebci.bciId = ?`,
+    [id],
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const deleteBCIs = (bciId) => {
+  return new Promise((resolve, reject) => {
+    if (!bciId ) {
+      console.log("NO BCIs are selected")
+      resolve();
+    } else {
+      connection.beginTransaction((error) => {
+        if (error) {
+          reject(error);
+        } else {
+          // Delete related commands first
+          connection.query('DELETE FROM lignebci WHERE bciId = ?', [bciId], (error, results) => {
+            if (error) {
+              connection.rollback(() => {
+                reject(error);
+              });
+            } else {
+              // If commands are deleted successfully, proceed to delete Bons
+              connection.query('DELETE FROM bci WHERE bciId IN (?)', [bciId], (error, results) => {
+                if (error) {
+                  connection.rollback(() => {
+                    reject(error);
+                  });
+                } else {
+                  // Commit the transaction if everything is successful
+                  connection.commit((error) => {
+                    if (error) {
+                      connection.rollback(() => {
+                        reject(error);
+                      });
+                    } else {
+                      resolve(); // Resolve without any data (successful deletion)
+                    }
+                  });
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+  });
+};
+
+
+
+export const updateBCI= (bciId,dateCreation) => {
+  if (dateCreation ==='RSR')
+  {
+
+
+    return new Promise((resolve, reject) => {
+      console.log(dateCreation);
+      connection.query('UPDATE bci SET isSeenByRSR = ? where bciId = ?',
+        [1,bciId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.insertId); // Resolve with the ID of the newly created bon
+          }
+        });
+    });
+  } else
+  if (dateCreation ==='MAG')
+  {
+
+
+    return new Promise((resolve, reject) => {
+       
+      connection.query('UPDATE bci SET isSeenByMag = ? where bciId = ?',
+        [1,bciId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.insertId); // Resolve with the ID of the newly created bon
+          }
+        });
+    });
+  } else
+  
+  if (dateCreation ==='Director'){
+    return new Promise((resolve, reject) => {
+      console.log(dateCreation);
+      connection.query('UPDATE bci SET isSeenByDR = ? where bciId = ?',
+        [1,bciId],
+        (error, results) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(results.insertId); // Resolve with the ID of the newly created bon
+          }
+        });
+    });
+  }else{
+
+  
+  return new Promise((resolve, reject) => {
+    console.log(dateCreation);
+    connection.query('UPDATE bci SET dateCreation = ? where bciId = ?',
+      [dateCreation,bciId],
+      (error, results) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(results.insertId); // Resolve with the ID of the newly created bon
+        }
+      });
+  });
+}
+};
+
+export const  updateBCIRows = (bciId, updatedCommandes) => {
+  if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
+
+  // Create an array of promises for each update query
+  const updatePromises = updatedCommandes.map(updatedCommande => {
+    const { productId, demandedQuantity } = updatedCommande;
+    const ligneBCIQuery = 'UPDATE lignebci set  quantity = ? WHERE bciId = ? AND productId = ?';
+    const ligneBCIValues = [demandedQuantity,bciId, productId];
+
+
+    // Execute the queries sequentially
+    return new Promise((resolve, reject) => {
+      connection.query(ligneBCIQuery, ligneBCIValues, (error, ligneBCIResults) => {
+        if (error) {
+          reject(error);
+        } else {
+          console.log(ligneBCIValues);
+          resolve(ligneBCIValues);
+        }
+      });
+    });
+  });
+};
+
+
+export default {updateBCIRows,fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows,deleteBonRec,updateReceptionRows,createBciRows,createBCI,fetchLigneBCIByBonRec,deleteBCIs};

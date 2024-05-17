@@ -5,6 +5,8 @@ import adminRoutes from "./appRoutes.tsx";
 import serviceAchatsRoutes from "./asaRoutes.tsx";
 import consommateurRoutes from "./consommateurRoutes.tsx";
 import magasinierRoutes from "./magasinierRoutes.tsx";
+import rsrRoutes from "./rsrRoutes.tsx";
+import directorRoutes from "./directorRoutes.tsx";
 import { RouteType } from "./config";
 import  chef_serviceRoutes from "./chef_serviceRoutes.tsx";
 
@@ -42,5 +44,11 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
 
+<<<<<<< HEAD
 export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
+=======
+export const  RSR: ReactNode = generateRoute(rsrRoutes);
+export const DIRECTOR: ReactNode = generateRoute(directorRoutes);
+
+>>>>>>> aadca5b038b356a56f0ae69523035f05159894ae
 

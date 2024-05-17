@@ -63,6 +63,7 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
     setEntered(updatedEntered);
   };
   const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+  
   setEnteredAtIndex(index);
     const { value } = event.target;
     const parsedValue = parseFloat(value);
@@ -85,16 +86,15 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
   const handleSaveChanges = async () => {
     try {
       // Prepare updated commandes data
-      const updatedCommandes = products.map((product) => ({
+      const updatedCommandes = products.map((product , index) => ({
         commandeId: product.commandeId,
-        quantity: product.deliveredQuantity,
-        left : product.leftQuantity -product.deliveredQuantity,
+        quantity:entered[index]? product.deliveredQuantity:0,
         dateCreation : formattedDate 
        
       }));
 
       
-     console.log(updatedCommandes);
+     
       await axios.put(`/api/bonRec/${bonData.bonId}`, {
         updatedCommandes
       });
@@ -110,6 +110,8 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
     
   };
 
+    // Determine if all product quantities are zero
+    const allProductsZeroLeft = products.every(product => product.leftQuantity === 0);
   return (
     <>
       <div className="mb-6">
@@ -189,6 +191,16 @@ const EditBR: React.FC<Props> = ({ selectedRow, goBack }) => {
   </div>
 ))}
 
+{allProductsZeroLeft && (
+        <button
+          className="bg-green-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-green-600 focus:outline-none focus:ring focus:ring-green-300 mr-4"
+          onClick={() => {
+            window.print()
+          }}
+        >
+          Print
+        </button>
+      )}
       <button
         className="bg-blue-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 mr-4"
         onClick={handleSaveChanges}

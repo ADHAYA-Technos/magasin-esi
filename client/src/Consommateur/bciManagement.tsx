@@ -5,36 +5,38 @@ import { GridColDef } from '@mui/x-data-grid';
 import { Box, Fab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
-import NavigationIcon from '@mui/icons-material/Navigation';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCI from './Forms/AddBCI.tsx';
-//import EditBCI from './Forms/EditBCI.tsx';
-import { renderProgress } from '../render/renderProgress.tsx';
-import saveAs from 'file-saver';
-import Papa from 'papaparse';
+import EditBCI from './Forms/EditBCI.tsx';
+import { renderBCIProgress } from '../render/renderBCIProgress.tsx';
+  
 interface Bon {
   id: number;
-  creationDate: string;
-  type: string;
+  dateCreation: string;
+  typee: string;
+  isSeenByRSR : boolean
+  isSeenByDR : boolean
+  isSeenByMag : boolean
 }
 
 const BCIsetShowAddBCIManagement: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [bons, setBons] = useState<Bon[]>([]);
-  const [setShowAddBCI, setShowAddBCIsetShowAddBCI] = useState<boolean>(false);
-  const [showEditBCIsetShowAddBCI, setShowEditBCIsetShowAddBCI] = useState<boolean>(false);
-  const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon | null>(null);
+  const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
+  const [showEditBCI, setShowEditBCI] = useState<boolean>(false);
+  const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon []>([]);
   useEffect(() => {
     fetchBons();
+    
   }, []);
 
   const fetchBons = async () => {
     try {
-      const response = await axios.get('/api/getBons');
+      const response = await axios.get('/api/getBCIs');
       // Add a unique identifier to each row object
       const bonsWithIds = response.data.map((bon, index) => ({
         ...bon,
-        id: bon.bonId, // Use the index as a simple unique identifier
+        id: bon.bciId, // Use the index as a simple unique identifier
       }));
       setBons(bonsWithIds);
     } catch (error) {
@@ -44,9 +46,10 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   
 
   const columns: GridColDef[] = [
-    { field: 'bonId', headerName: 'ID', width: 70 }, // Change field to 'id'
-    { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, // Change field to 'creationDate'
-    { field: 'type', headerName: 'Type', type: 'number', renderCell: renderProgress, width: 80 }, //Change field to 'Type'
+    { field: 'bciId', headerName: 'ID', width: 70 }, 
+    { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, 
+    { field: 'typee', headerName: 'Type', type: 'number', width: 80 }, 
+    { field: 'progress', headerName: 'Progress', renderCell: renderBCIProgress, width: 500 }, 
   ];
   
   function CustomToolbar() {
@@ -78,50 +81,64 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
     link.click();
   };
   const handleSelectionChange = (newSelection: GridRowId[]) => {
-  
-    setSelectedRows(newSelection); 
+     
+    setSelectedRows(newSelection[1]); 
+    
+    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[1]));
+    
   };
 
-  const handleAddBCIsetShowAddBCI = () => {
-    setShowAddBCIsetShowAddBCI(true);
+  const handleAddBCI = () => {
+    setShowAddBCI(true);
   };
 
   const handleGoBack = () => {
-    setShowAddBCIsetShowAddBCI(false);
+    setShowEditBCI(false);
+    setShowAddBCI(false);
   };
+
+
+  //handle DELETE BCIs
   const handleDeleteBons = async () => {
+    const bonsWithProgress = bons.filter(bon => bon.id === parseInt(selectedRows) && bon.isSeenByRSR === 1);
   
-    //const bonsToDelete = bons.filter(bon => selectedRows.includes(bon.id));
- 
-    const bonsWithRecieved = bonsToDelete.filter(bon => bon.recieved > 0);
-    if (bonsWithRecieved.length > 0) {
-      const bonIds = bonsWithRecieved.map(bon => bon.id).join(', ');
-      const confirmDelete = window.confirm(`Bon ID: ${bonIds} has already started receiving orders. Do you want to proceed with deletion?`);
-      if (!confirmDelete) return;
+    if (bonsWithProgress.length > 0) {
+      
+      alert(`the selected bon has already treated by RSR and can't be deleted`);
+      return; // Exit the function without further execution
     }
     try {
-      await axios.delete('/api/deleteBons', {
-        data: { bonIds: bonsToDelete.map(bon => bon.id) }
+      
+      await axios.delete('/api/deleteBCIs', {
+        data: { selectedRows }
       });
+      
       fetchBons();
     } catch (error) {
       console.error('Error deleting bons:', error);
     }
   };
-  const handleEditBCIsetShowAddBCI = () => {
-    if (selectedRows.length === 1) {
-      const selectedRow = bons.find(bon => bon.id === selectedRows[0]);
-      setShowEditBCIsetShowAddBCI(true);
-      setSelectedRowForEdit(selectedRow);
+
+  //handle EDIT BCIs
+  const handleEditBCI = () => {
+    const bonsWithProgress = bons.filter(bon => bon.id === parseInt(selectedRows) && bon.isSeenByRSR === 1);
+    if (bonsWithProgress.length > 0) {
+      alert(`the selected bon has already treated by RSR and can't be edited`);
+      return ;
+    }
+    if (selectedRowForEdit.length === 1) {
+     
+      setShowEditBCI (true);
+      
      
     } else {
-      // Show error message or handle the case where more than one row is selected
+      alert('Please select a single row to edit');
     }
   };
 
   return (
     <>
-    {!setShowAddBCI && !showEditBCIsetShowAddBCI && (
+    {!ShowAddBCI && !showEditBCI && (
       <>
         <div className="flex text-center text-2xl m-2 font-medium justify-center">
           Bons De Commande Interne
@@ -143,27 +160,22 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
           />
         </div>
         <Box sx={{ '& > :not(style)': { m: 1 } }} >
-  <Fab onClick={handleAddBCIsetShowAddBCI} color="success" aria-label="add">
+  <Fab onClick={handleAddBCI} color="success" aria-label="add">
     <AddIcon />
   </Fab>
-  <Fab color="secondary" aria-label="edit" onClick={handleEditBCIsetShowAddBCI}>
+  <Fab color="secondary" aria-label="edit" onClick={handleEditBCI}>
     <EditIcon />
   </Fab>
   <Fab color="error" aria-label="delete" onClick={handleDeleteBons}>
     <DeleteIcon />
   </Fab>
-  <button
-        className={` ml-2 bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-300 `}
-        //onClick={handleValidate}
-      >
-        valider
-      </button>
+ 
 </Box>
 
       </>
     )}
-    {setShowAddBCI && <AddBCI selectedRowIds={selectedRows} goBack={handleGoBack} />}
-    {/* {showEditBCIsetShowAddBCI && <EditBCI selectedRow={selectedRowForEdit} goBack={handleGoBack} />} */}
+    {ShowAddBCI && <AddBCI goBack={handleGoBack} />}
+     {showEditBCI && <EditBCI selectedBCIRow={selectedRowForEdit[0]} goBack={handleGoBack} />} 
   </>
   
   );

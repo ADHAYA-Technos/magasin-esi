@@ -10,7 +10,7 @@ import RoleRoute from "./routes/roleRoute.js"
 import Database from "./config/Database.js";
 import AuthRoutes from "./routes/authRoutes.js"
 import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows} from "./controllers/capfControllers.js";
+import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails, createBciRows, createBCI, fetchLigneBCIByBonRec, deleteBCIs, updateBCIRows, updateBCI, associateProduct} from "./controllers/capfControllers.js";
 const app = express()
 const port = 5000
 dotenv.config();
@@ -204,8 +204,10 @@ app.get('/api/fournisseurs', async (req, res) => {
 app.get('/api/products/:articleId', async (req, res) => {
   try {
       const articleId = req.params.articleId;
+      
       fetchProductsByArticle(articleId, (error, results) => {
           if (!error) {
+           
               res.json(results);
           } else {
               console.error("Error fetching fournisseurs:", error);
@@ -356,9 +358,10 @@ app.put('/api/deleteChapitre', async (req, res) => {
 app.post('/api/createArticle', async (req, res) => {
   
   const { chapitreId,designation,code } = req.body;
-  
+  console.log(req.body);
+  const TVA =req.body.TVA ;
   try {
-    const article = await createArticle( chapitreId,designation,code);
+    const article = await createArticle( chapitreId,designation,code,TVA);
     res.status(201).json( article );
   } catch (error) {
     console.error('Error creating Article:', error);
@@ -370,10 +373,10 @@ app.put('/api/editArticle', async (req, res) => {
   const articleId = req.body.articleId;
   const designation= req.body.designation;
   const code= req.body.code;
-
+  const TVA =req.body.TVA ;
 
   try {
-    await updateArticle(articleId, designation, code); 
+    await updateArticle(articleId, designation, code,TVA); 
     res.status(200).json({ message: 'Article updated successfully' });
   } catch (error) {
     console.error('Error updating Article:', error);
@@ -395,10 +398,10 @@ app.put('/api/deleteArticle', async (req, res) => {
 });
 
 app.post('/api/addProduct', async (req, res) => {
-  const {articleId,designation} = req.body;
+  const {articleId,designation,seuilMin} = req.body;
   try {
    
-    const addedProduct = await addProduct(articleId, designation);
+    const addedProduct = await addProduct(articleId, designation,seuilMin);
     res.status(201).json(addedProduct);
   } catch (error) {
     console.error('Error adding product:', error);
@@ -410,11 +413,11 @@ app.post('/api/addProduct', async (req, res) => {
 app.put('/api/editProduct', async (req, res) => {
   const productId = req.body.productId;
   const designation= req.body.designation;
-  
+  const seuilMin= req.body.seuilMin;
 console.log(req.body);
   try {
    
-    const updatedProduct = await updateProduct(productId, designation);
+    const updatedProduct = await updateProduct(productId, designation,seuilMin);
     res.status(200).json(updatedProduct);
   } catch (error) {
     console.error('Error updating product:', error);
@@ -435,6 +438,19 @@ try {
   }
 });
 
+app.put('/api/associateProduct', async (req, res) => {
+
+  const selectedId = req.body.selectedId; 
+  const selectedArticle =  req.body.selectedArticle; 
+ 
+  try {
+      await associateProduct(selectedId,selectedArticle); 
+      res.status(200).json({ message: 'products Associated successfully' });
+    } catch (error) {
+      console.error('Error updating products:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+  });
 app.get('/api/products', async (req, res) => {
   try {
       fetchProducts((error, results) => {
@@ -454,6 +470,7 @@ app.get('/api/products', async (req, res) => {
 app.put('/api/bonRec/:bonId', async (req, res) => {
   const bonId = req.params.bonId;
   const updatedCommandes = req.body.updatedCommandes;
+ 
   const dateCreation=updatedCommandes[0].dateCreation;
 
 
@@ -514,8 +531,9 @@ app.get('/api/receptions/:id', async (req, res) => {
 
 app.put('/api/updateBonRec/:id', async (req, res) => {
   const bonRecId = req.params.id;
-  const updatedCommandes = req.body.updatedCommandes;
-  const dateCreation=updatedCommandes[0].dateCreation;
+  const updatedCommandes= req.body.updatedCommandes;
+  console.log(updatedCommandes);
+  const dateCreation=req.body.updatedCommandes[0].dateCreation;
 
 
   try {
@@ -527,6 +545,139 @@ app.put('/api/updateBonRec/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 
+  
+
+});
+
+app.get('/api/getBCIs', async (req, res) => {
+  try {
+    fetchBCIsWithDetails((error, bons) => {
+      if (!error) {
+     
+        res.json(bons);
+      } else {
+        console.error('Error fetching bons:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching bons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+     
+});
+
+//Create BCI 
+app.post('/api/createBCI', async (req, res) => {
+  
+  const { type,dateCreation } = req.body;
+  
+  try {
+    const bciId = await createBCI(type,dateCreation);
+    res.status(201).json({ bciId });
+  } catch (error) {
+    console.error('Error creating bon:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Route to insert rows into lignebci table
+app.post('/api/createBciRows', async (req, res) => {
+
+  const products = req.body;
+  console.log(products);
+  try {
+    await createBciRows(  products);
+    res.status(201).json({ message: 'Commandes of "BCI" rows inserted successfully' });
+  } catch (error) {
+    console.error('Error inserting Commande rows:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+app.get('/api/lignebci/:id', async (req, res) => {
+  const { id } = req.params;
+  try {
+    fetchLigneBCIByBonRec(id, (error, results) => {
+      if (!error) {
+        res.json(results);
+        console.log(results);
+      } else {
+        console.error('Error fetching ligne de receptions:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching ligne de receptions:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+//delete BCIs
+app.delete('/api/deleteBCIs', async (req, res) => {
+  console.log(req.body);
+  const bciId = req.body.selectedRows;
+  try {
+
+    await deleteBCIs(bciId);
+    res.sendStatus(204); // No content (successful deletion)
+  } catch (error) {
+    console.error('Error deleting bons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.put('/api/updateBCI/:id', async (req, res) => {
+  const bciId = req.params.id;
+  const updatedCommandes= req.body.updatedCommandes;
+  console.log(updatedCommandes);
+  const dateCreation=req.body.updatedCommandes[0].dateCreation;
+  if(updatedCommandes[0].MAG ){
+    try {
+      await updateBCI(bciId,updatedCommandes[0].MAG); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per Magasinier successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return;
+  }else
+  if(updatedCommandes[0].RSR ){
+    try {
+      await updateBCI(bciId,updatedCommandes[0].RSR); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per RSR successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return;
+  }else if (updatedCommandes[0].DR){
+    
+    try {
+      await updateBCI(bciId,updatedCommandes[0].DR); // Pass updatedCommandesData to the function
+      res.status(200).json({ message: 'Bon de Commande Interne Validated per Director successfully' });
+      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+    } catch (error) {
+      console.error('Error updating BCI:', error);
+      res.status(500).json({ error: 'Internal server error' });
+    }
+    return ;
+  }
+
+  try {
+    await updateBCI(bciId,dateCreation); // Pass updatedCommandesData to the function
+    res.status(200).json({ message: 'Bon de Commande Interne created successfully' });
+    await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+  } catch (error) {
+    console.error('Error updating BCI:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+
+  
 
 });
 app.listen(port, () => {

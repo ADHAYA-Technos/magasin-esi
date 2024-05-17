@@ -2,103 +2,90 @@ import axios from 'axios';
 import React from 'react';
 import { useEffect, useState } from 'react'
 
-interface BonRec {
-    
-    bonId : number;
-    bonRecId : number;
-    dateCreation : string;
-    id:number
+interface BCI {
+  bciId : number  
+  type: string;
+  dateCreation: string,
+  products: string[];
+  quantities: number[];
 
   }
-const EditBonRec = ({ selectedBRRow, goBack }) => {
-    const [bonData, setBonData] = useState<BonRec>({
-        bonId: 0,
-        bonRecId:0,
+
+  type Product = {
+    productId: number;
+    designation: string;
+    demandedQuantity: number;
+    quantityPhysique: number;
+    seuilMin : number ;
+  };
+const EditBCI= ({ selectedBCIRow, goBack }) => {
+    const [bonData, setBonData] = useState<BCI>({
+        bciId: 0,
+        type:'',
         dateCreation: '',
-        id: 0,
+        products : [],
+        quantities : [],
       });
-      const [products, setProducts] = useState<string[]>([]);
+      const [products, setProducts] = useState<Product[]>([]);
       const [entered , setEntered] = useState<boolean[]>([]);
-      const [leftQuantity, setLeftQuantity] = useState<number[]>();
-      const [deliveredQuantity, setDeliveredQuantity] = useState<number[]>();
-      
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
      
     useEffect(() => {
        
         
-        if (selectedBRRow) {
+        if (selectedBCIRow) {
 
             
-          setBonData(selectedBRRow);
+          setBonData(selectedBCIRow);
          
         }
-      }, [selectedBRRow]);
+      }, [selectedBCIRow]);
     
       
     
       useEffect(() => {
-        if (bonData.id !== 0) {
+        if (bonData.bciId !== 0) {
           
-          fetch(`/api/receptions/${bonData.id}`)
+          fetch(`/api/lignebci/${bonData.bciId}`)
             .then((response) => response.json())
             .then((data) => {
               if (Array.isArray(data)) {
                 
                 setProducts(data);
                 
-                 setLeftQuantity(data.map((product) => product.leftQuantity));
-                 setDeliveredQuantity(data.map((product) => product.quantity));
               
               } else {
                 console.error('Invalid data format:', data);
               }
             });
         }
-      }, [bonData.id]);
+      }, [bonData.bciId]);
 
-      const setEnteredAtIndex = (index: number) => {
-        const updatedEntered = [...entered];
-        updatedEntered[index] = true;
-        setEntered(updatedEntered);
-      };
+  
 
       const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
         
-        
-        setEnteredAtIndex(index);
-        const { value } = event.target;
-        const parsedValue = parseFloat(value);
-        
-        // Check if the parsedValue is NaN or if it's greater than leftQuantity
-        if (isNaN(parsedValue) || parsedValue > (leftQuantity[index] + deliveredQuantity[index])) {
-          // Update the input value to leftQuantity if parsedValue exceeds it
-          event.target.value =(leftQuantity[index] + deliveredQuantity[index]).toString();
-          
-          return ;
-        }
     
         setProducts((prevProducts) => {
           const updatedProducts = [...prevProducts];
-          updatedProducts[index].deliveredQuantity = parseFloat(event.target.value); // Update with the parsed value
+          updatedProducts[index].demandedQuantity = parseInt(event.target.value); // Update with the parsed value
           return updatedProducts;
         });
-        
+    
       };
       const handleSaveChanges = async () => {
         try {
          
           const updatedCommandes = products.map((product) => ({
-            commandeId: product.commandeId,
-            quantity: product.deliveredQuantity,
-            
-            dateCreation : formattedDate 
-           
+            productId: product.productId,
+            demandedQuantity: product.demandedQuantity,
+            dateCreation : formattedDate ,
+            MAG : 'MAG' 
           }));
       
           
-          await axios.put(`/api/UpdateBonRec/${bonData.id}`, {
+          await axios.put(`/api/UpdateBCI/${bonData.bciId}`, {
             updatedCommandes
           });
     
@@ -116,15 +103,12 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
   <div className="mb-6">
     <div className="flex flex-col md:flex-row md:space-x-4">
       <div className="md:w-1/3">
-        <p className="text-gray-700 text-sm font-bold mb-1">ID du BCE:</p>
-        <div className="border border-gray-300 rounded-md p-2">{bonData.bonId}</div>
+        <p className="text-gray-700 text-sm font-bold mb-1">ID du BCI:</p>
+        <div className="border border-gray-300 rounded-md p-2">{bonData.bciId}</div>
       </div>
+     
       <div className="md:w-1/3">
-        <p className="text-gray-700 text-sm font-bold mb-1">ID du BR:</p>
-        <div className="border border-gray-300 rounded-md p-2">{bonData.bonRecId}</div>
-      </div>
-      <div className="md:w-1/3">
-        <p className="text-gray-700 text-sm font-bold mb-1">Date de création du BR:</p>
+        <p className="text-gray-700 text-sm font-bold mb-1">Date de création du BCI:</p>
         <div className="border border-gray-300 rounded-md p-2">{bonData.dateCreation}</div>
       </div>
     </div>
@@ -137,19 +121,15 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
           <p className="text-gray-700 text-sm font-bold mb-1">Product:</p>
           <div className="mb-2">{product.designation}</div>
           <p className="text-gray-700 text-sm font-bold mb-1">Demanded quantity:</p>
-          <div className="mb-2">{product.demandedQuantity}</div>
-          <p className="text-gray-700 text-sm font-bold mb-1">Left quantity:</p>
-          <div className="mb-2">{entered[index] ? (leftQuantity[index] - (product.deliveredQuantity -deliveredQuantity[index])) : (product.leftQuantity ? product.leftQuantity : 0)}</div>
-          <p className="text-gray-700 text-sm font-bold mb-1">Delivered quantity:</p>
           <input
             type="number"
             min={0}
-            disabled = {(leftQuantity[index] + deliveredQuantity[index]) === 0}
-            max={(leftQuantity[index] + deliveredQuantity[index])}
-            value={entered[index] ? product.deliveredQuantity : product.quantity}
+            max={ product.demandedQuantity}
+            value={product.demandedQuantity}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />
+         
         </div>
       </div>
     ))}
@@ -160,7 +140,7 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
       className="bg-blue-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 mr-4"
       onClick={handleSaveChanges}
     >
-      Save Changes
+      Validate BCI
     </button>
     <button
       className="bg-gray-300 text-gray-700 py-2 px-6 rounded-md shadow-md hover:bg-gray-400 focus:outline-none focus:ring focus:ring-gray-300"
@@ -175,4 +155,4 @@ const EditBonRec = ({ selectedBRRow, goBack }) => {
   )
 }
 
-export default EditBonRec
+export default EditBCI ;
