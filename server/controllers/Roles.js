@@ -1,5 +1,5 @@
-import Role from "../models/roleModel.js";
-import User from "../models/userModel.js"; // Assuming you need to manage roles associated with users
+import Role from "../models/Role.js";
+import User from "../models/User.js"; // Assuming you need to manage roles associated with users
 
 export const getRoles = async (req, res) => {
     try {

@@ -1,0 +1,29 @@
+import { DataTypes } from 'sequelize';
+import  Database  from '../config/Database.js';
+import Consommateur from './Consommateur.js';
+const RSR = Database.define(
+	'RSR',
+	{
+		
+		matricule: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		},
+		service: {
+			type: DataTypes.STRING,
+			allowNull: false,
+		}
+	},
+	{
+		timestamps: false,
+	}
+);
+
+RSR.hasMany(Consommateur, {
+	foreignKey: 'supervisor',
+});
+Consommateur.hasOne(RSR, {
+	foreignKey: 'supervisor',
+});
+
+export default RSR;

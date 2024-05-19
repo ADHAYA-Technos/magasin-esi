@@ -8,27 +8,23 @@ import SaasPage from "../pages/dashboard/SaasPage.tsx";
 import DocumentationPage from "../pages/documentation/DocumentationPage.tsx";
 import  Profile  from "../pages/profile/Profile.tsx";
  //icons
- import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
+ import GroupAddIcon from '@mui/icons-material/GroupAdd';
+  import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import PersonIcon from '@mui/icons-material/Person';
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
-import AccessibilityIcon from '@mui/icons-material/Accessibility';
 import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
-import DescriptionIcon from '@mui/icons-material/Description';
-import Inventory2Icon from '@mui/icons-material/Inventory2';
-import ReceiptIcon from '@mui/icons-material/Receipt';
 
 
 //ASA
 
-import ChapitresManagements from "../service_achats/chapitresManagement.tsx";
-import ProductManagement from "../service_achats/productsManagements.tsx";
-import ArticleManagement from "../service_achats/articleManagement.tsx";
-import BceManagement from "../service_achats/bceManagement.tsx";
+
+import CreateNewRole from "../admin/create-new-role/CreateNewRole.tsx";
+import RolesManage from "../admin/roles-management/RolesManage.tsx";
+import UserManagement from "../admin/UsersManagement.tsx";
 import React from "react";
 
 
-export const serviceAchatsRoutes: RouteType[] = [
+export const adminRoutes: RouteType[] = [
     {
     
       index: true,
@@ -77,41 +73,40 @@ export const serviceAchatsRoutes: RouteType[] = [
       ]
     },
     {
-      path: "/chapitres",
-      element: <ChapitresManagements />,
-      state: "chapitres",
+      path: "/users",
+      element: <UserManagement />,
+      state: "users",
       sidebarProps: {
-        displayText: "Chapitres Management",
-        icon: < DescriptionIcon/>
-      }
+        icon: <AdminPanelSettingsIcon />,
+        displayText: "Users Management",
+        
+      },
       
     },
     {
-      path: "/articles",
-      element: <ArticleManagement />,
-      state: "articles",
-      sidebarProps: {
-        displayText: "Article Management",
-        icon: <AccountTreeIcon />
-      }
-    },
-    {
-      path: "/products",
-      element: <ProductManagement/>,
+      path: "/roles",
+      element: <RolesManage />,
       state: "roles",
+    
       sidebarProps: {
-        displayText: "Products Management",
-        icon: <Inventory2Icon />
-      }
-    },
-    {
-      path: "/bce",
-      element: <BceManagement/>,
-      state: "bce",
-      sidebarProps: {
-        displayText: "BCE Management",
-        icon: <ReceiptIcon />
+        icon: <GroupAddIcon />,
+        displayText: "Roles Management",
+        
       },
+      child: [        {
+        index: true,
+        element: <RolesManage />,
+        state: "roles.index"
+      },
+        {
+          path: '/roles/createnewrole',
+          element: <CreateNewRole />,
+          state: "roles.createnewrole",
+          sidebarProps: {
+            displayText: "Create Role",
+          
+          }
+        }]
     },
     {
       path: "/profile",
@@ -121,19 +116,10 @@ export const serviceAchatsRoutes: RouteType[] = [
         displayText: "Profile Settings",
         icon: <PersonIcon />
       }
-    },
-    {
-      path: "/documentation",
-      element: <DocumentationPage />,
-      state: "documentation",
-      sidebarProps: {
-        displayText: "Documentation",
-        icon: <ArticleOutlinedIcon />
-      }
     }
   ];
 
-  export default serviceAchatsRoutes ;
+  export default adminRoutes ;
   
   
   
