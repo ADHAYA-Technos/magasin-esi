@@ -19,11 +19,5 @@ const RSR = Database.define(
 	}
 );
 
-RSR.hasMany(Consommateur, {
-	foreignKey: 'supervisor',
-});
-Consommateur.hasOne(RSR, {
-	foreignKey: 'supervisor',
-});
 
 export default RSR;
