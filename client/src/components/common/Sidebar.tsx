@@ -1,4 +1,4 @@
-import { Avatar, Drawer, List, Stack, Toolbar,ListItem, ListItemText, Typography } from "@mui/material";
+import { Avatar, Drawer, List, Stack, Toolbar,ListItem, ListItemText, Typography, Button } from "@mui/material";
 
 import colorConfigs from "../../configs/colorConfigs";
 import sizeConfigs from "../../configs/sizeConfigs";
@@ -14,12 +14,28 @@ import React from "react";
 import assets from "../../assets/";
 import { RouteType } from "../../routes/config.ts";
 import { grey } from "@mui/material/colors";
+import axios from "axios";
 
 type SidebarProps = {
   roles: string[];
 };
 
+
 const Sidebar = ({ roles }: SidebarProps) => {
+
+  const handleLogout = async () => {
+    try {
+      const response = await axios.get('/logout');
+      if (response.status === 200) {
+        console.log('Logout successful');
+        window.location.reload();
+      } else {
+        console.error('Logout failed:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Logout failed:', error.message);
+    }
+  };
   console.warn(roles);
   return (
     <Drawer
@@ -93,6 +109,11 @@ const Sidebar = ({ roles }: SidebarProps) => {
           )
         ) : null
       )}
+      <ListItem className="flex justify-end top-72 left-20">
+          <Button onClick={handleLogout}>
+            <ListItemText primary="Logout" />
+          </Button>
+        </ListItem>
       </List>
 
       <Typography variant="body2" align="center" sx={{ marginBottom: "10px", color: grey }}>

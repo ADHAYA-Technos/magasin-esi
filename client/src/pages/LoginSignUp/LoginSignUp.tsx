@@ -60,7 +60,7 @@ const LoginSignUp = (props: Props) => {
     try {
       console.log(email, password);
       const response = await axios.post('/login', { email, password });
-      if(response.data.isCompleted){
+      if(!response.data.isCompleted){
       navigate("/SignUpSuite");
 
       }else{
