@@ -3,8 +3,9 @@ import assets from '../../assets';
 import axios from 'axios';
 import './LoginSignUp.css';
 import { useNavigate,useSearchParams } from 'react-router-dom';
-import VerificationModal from './VerificationModal.tsx';
+
 import PageIllustration from './PageIllustration.jsx';
+import PasswordReset from './PasswordReset.tsx';
 type Props = {};
 
 const LoginSignUp = (props: Props) => {
@@ -55,11 +56,14 @@ const LoginSignUp = (props: Props) => {
     }
   }, [email, username, password, action]);
   const [open, setOpen] = React.useState(false);
+  const [resetPassword , setResetPassword] = useState(false);
 	const handleClose = () => setOpen(false);
   const handleLogin = async () => {
     try {
       console.log(email, password);
       const response = await axios.post('/login', { email, password });
+      console.warn(response);
+      
       if(!response.data.isCompleted){
       navigate("/SignUpSuite");
 
@@ -70,11 +74,14 @@ const LoginSignUp = (props: Props) => {
           
 
     } catch (error) {
+      alert('Login failed: Invalid email or password');
       console.error('Login failed:', error);
       // Handle login failure
     }
   };
-
+  const handleResetClick = () => {
+    setResetPassword(true); 
+  };
   const handleLoginClick = () => {
     if (action === 'Log In') {
       handleLogin();
@@ -83,6 +90,9 @@ const LoginSignUp = (props: Props) => {
     }
   };
 
+  const handleGoBack = () => {
+    setResetPassword(false); 
+  };
   const handleRegisterClick = () => {
     if (action === 'Sign Up') {
       handleRegister();
@@ -123,8 +133,9 @@ const LoginSignUp = (props: Props) => {
     }
   };
 
-  return (
-    <>
+  return (<>
+    {!resetPassword &&
+      <>
          <div className="flex flex-col min-h-screen overflow-hidden antialiased bg-gray-900 text-gray-200 tracking-tight">
             <main className="grow">
                 {/* Page illustration */}
@@ -179,7 +190,7 @@ const LoginSignUp = (props: Props) => {
             <div></div>
           ) : (
             <div className="forgot-password">
-              Lost Password ? <span>Click Here !</span>
+              Lost Password ? <span onClick={handleResetClick}>Click Here !</span>
             </div>
           )}
         </div>
@@ -210,6 +221,10 @@ const LoginSignUp = (props: Props) => {
     </main>
         </div>
     </>
+    }
+    {resetPassword && <PasswordReset goBack={handleGoBack}/>}
+    </>
+  
   );
 };
 

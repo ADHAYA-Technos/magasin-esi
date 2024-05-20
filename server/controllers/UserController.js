@@ -5,6 +5,7 @@ import Users from '../models/User.js';
 import argon2 from 'argon2'; // Import argon2 library
 import UsersRoles from '../models/UserRoles.js';
 import Roles from '../models/Role.js';
+import PasswordResets from '../models/PasswordReset.js';
 export async function createUser(req, res) {
     const { email, password: plainPassword, username :name,userType } = req.body;
     
@@ -157,5 +158,73 @@ export async function completeUser(req, res) {
         return res.status(500).json({ message: 'Internal Server Error' });
     }
 }
+// Function to handle password reset request
+export async function requestPasswordReset(req, res) {
+    const { email } = req.body;
+    
+    try {
+        // Find the user by email
+        const user = await Users.findOne({ where: { email } });
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
-export default { createUser, verifyUser, completeUser };
+        // Generate a unique token
+        const resetToken = v4();
+
+        // Save the token in the database
+        await PasswordResets.create({ email, token: resetToken });
+
+        // Send the reset password link to the user's email
+        const transporter = createTransport({
+            host: 'smtp.zoho.com',
+            port: 465,
+            secure: true,
+            auth: {
+                user: 'adhaya.es3@zohomail.com',
+                pass: 'bUzGBC7W.AN@VjR',
+            },
+        });
+
+
+        await transporter.sendMail({
+            from: 'adhaya.es3@zohomail.com',
+            to: email,
+            subject: 'Password Reset Request',
+            html: `<p>Click this link to reset your password: <a href="http://localhost:3000/reset-password?token=${resetToken}">Reset Password</a></p>`,
+        });
+
+        return res.status(200).json({ message: 'Password reset email sent' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+// Function to handle password reset
+export async function resetPassword(req, res) {
+    const { token, password } = req.body;
+
+    try {
+        // Find the token in the database
+        const resetRecord = await PasswordResets.findOne({ where: { token } });
+        if (!resetRecord) return res.status(404).json({ message: 'Invalid token' });
+
+        // Find the user by email
+        const user = await Users.findOne({ where: { email: resetRecord.email } });
+        if (!user) return res.status(404).json({ message: 'User not found' });
+
+        // Update user's password
+        const hashedPassword = await argon2.hash(password);
+        user.set({ password: hashedPassword });
+        await user.save();
+
+        // Delete the token record from the database
+        await resetRecord.destroy();
+
+        return res.status(200).json({ message: 'Password reset successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
+export default { createUser, verifyUser, completeUser, requestPasswordReset, resetPassword };

@@ -115,11 +115,15 @@ app.get('/verify-email', UserController.verifyUser);
 app.post('/login', [passport.authenticate('local')], (req, res) => {
   res.status(200).json(req.user);
 });
+
+app.post('/reset-password-request', UserController.requestPasswordReset);
+app.post('/reset-password', UserController.resetPassword);
 app.post(
   '/complete-profile',
   [ensureAuthenticated, checkCompleted],
   UserController.completeUser
 );
+
 app.get('/logout', (req, res) => {
   req.logout(() => {
     res.status(200).json({ message: 'You have been logged out' });

@@ -8,6 +8,7 @@ import { ASAROUTES, MAGASINIERROUTES, RSR, DIRECTOR, CONSOMATEUR, ADMINROUTES } 
 import axios from "axios";
 import PageIllustration from "./pages/LoginSignUp/PageIllustration.jsx";
 import { LinearProgress, Stack } from "@mui/material";
+import ResetPassword from "./pages/LoginSignUp/ResetPassword.tsx";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -60,7 +61,7 @@ function App() {
       <Routes>
         <Route path="/verify-email" element={<EmailConfirmation />} />
         <Route path="/SignUpSuite" element={<SignUpSuite />} />
-
+        <Route path="/reset-password" element={<ResetPassword />} />
         {authenticated ? (
           <Route path="/" element={<MainLayout />}>
 		

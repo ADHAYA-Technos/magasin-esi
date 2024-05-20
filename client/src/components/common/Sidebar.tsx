@@ -15,6 +15,7 @@ import assets from "../../assets/";
 import { RouteType } from "../../routes/config.ts";
 import { grey } from "@mui/material/colors";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 type SidebarProps = {
   roles: string[];
@@ -22,12 +23,13 @@ type SidebarProps = {
 
 
 const Sidebar = ({ roles }: SidebarProps) => {
-
+const navigate = useNavigate();
   const handleLogout = async () => {
     try {
       const response = await axios.get('/logout');
       if (response.status === 200) {
         console.log('Logout successful');
+        navigate('/');
         window.location.reload();
       } else {
         console.error('Logout failed:', response.data.message);
@@ -116,10 +118,11 @@ const Sidebar = ({ roles }: SidebarProps) => {
         </ListItem>
       </List>
 
-      <Typography variant="body2" align="center" sx={{ marginBottom: "10px", color: grey }}>
+      <Typography variant="body2" align="center" sx={{ marginBottom: "10px", marginTop :"5px" ,color: grey }}>
         © ESI-SMART-STORE
       </Typography>
     </Drawer>
+    
   );
 };
 
