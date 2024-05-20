@@ -33,6 +33,7 @@ const BCIsetShowAddBCIManagement: React.FC = () => {
   const fetchBons = async () => {
     try {
       const response = await axios.get('/api/getBCIs');
+      console.warn(response);
       // Add a unique identifier to each row object
       const bonsWithIds = response.data.map((bon, index) => ({
         ...bon,

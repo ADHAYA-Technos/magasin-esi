@@ -70,8 +70,8 @@ const ResetPassword: React.FC<Props> = ({ goBack }) => {
                       <input
                         id="email"
                         type="email"
-                        className="form-input w-full text-gray-300"
-                        placeholder="you@yourcompany.com"
+                        className="form-input w-full text-gray-900"
+                        placeholder="ab.name@esi-sba.dz"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         required

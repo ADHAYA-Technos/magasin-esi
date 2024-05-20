@@ -64,11 +64,13 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         {authenticated ? (
           <Route path="/" element={<MainLayout />}>
-		
+  
             {roles.includes('asa')?ASAROUTES:[]}
             {roles.includes('consommateur')?CONSOMATEUR:[]}
-            {roles.includes('rsr')?RSR:[]}
-            {roles.includes('director')?DIRECTOR:[]}
+            {/*roles.includes('rsr')?RSR:[]*/}
+            {RSR}
+            {DIRECTOR}
+            {/*roles.includes('director')?DIRECTOR:[]*/}
             {roles.includes('administrator')?ADMINROUTES:[]}
             {roles.includes('magasinier')?MAGASINIERROUTES:[]}
           </Route>

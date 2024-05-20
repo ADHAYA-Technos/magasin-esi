@@ -125,7 +125,7 @@ export async function completeUser(req, res) {
         const user = await Users.findOne({ where: { email } });
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        user.set({ address, telephone, userType });
+        user.set({ address, telephone, userType,service });
 
         switch (userType) {
             case 'consommateur':
@@ -188,7 +188,7 @@ export async function requestPasswordReset(req, res) {
         await transporter.sendMail({
             from: 'adhaya.es3@zohomail.com',
             to: email,
-            subject: 'Password Reset Request',
+            subject: 'ESI SMART STORE "Password Reset Request"',
             html: `<p>Click this link to reset your password: <a href="http://localhost:3000/reset-password?token=${resetToken}">Reset Password</a></p>`,
         });
 

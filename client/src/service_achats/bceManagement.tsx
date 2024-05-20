@@ -20,6 +20,7 @@ interface Bon {
   fournisseur: string;
   recieved: number;
   prix: string;
+  total : string;
 }
 
 const BceManagement: React.FC = () => {
@@ -54,7 +55,8 @@ const BceManagement: React.FC = () => {
     { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, // Change field to 'creationDate'
     { field: 'raisonSociale', headerName: 'Fournisseur', width: 130 }, // Change field to 'fournisseur'
     { field: 'recieved', headerName: 'Recieved', type: 'number', renderCell: renderProgress, width: 80 },
-    { field: 'totalPu', headerName: 'Prix', width: 130 }, // Change field to 'prix'
+    { field: 'totalPu', headerName: 'Montant Total HT', width: 130 },
+    { field: 'total', headerName: 'Montant Total TTC', width: 180 } 
   ];
   
   function CustomToolbar() {

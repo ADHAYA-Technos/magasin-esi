@@ -16,6 +16,7 @@ interface Bon {
   typee: string;
   isSeenByRSR : boolean
   name : string;
+  service :string;
 }
 
 const BCIValidation: React.FC = () => {
@@ -49,7 +50,8 @@ const BCIValidation: React.FC = () => {
     { field: 'dateCreation', headerName: 'Date De Création', width: 130 }, 
     { field: 'typee', headerName: 'Type', type: 'number', width: 80 }, 
     { field: 'progress', headerName: 'Progress', renderCell: renderBCIProgress, width: 500 }, 
-    { field: 'name', headerName: 'Consommateur', width: 500 }, 
+    { field: 'name', headerName: 'Consommateur', width: 250 }, 
+    { field: 'service', headerName: 'Service', width: 250 }, 
   ];
   
   function CustomToolbar() {

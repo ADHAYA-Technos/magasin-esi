@@ -610,10 +610,10 @@ app.get('/api/getBCIs', async (req, res) => {
 //Create BCI 
 app.post('/api/createBCI', async (req, res) => {
   
-  const { type,dateCreation } = req.body;
+  const { userId,type,dateCreation } = req.body;
   
   try {
-    const bciId = await createBCI(type,dateCreation);
+    const bciId = await createBCI(userId,type,dateCreation);
     res.status(201).json({ bciId });
   } catch (error) {
     console.error('Error creating bon:', error);

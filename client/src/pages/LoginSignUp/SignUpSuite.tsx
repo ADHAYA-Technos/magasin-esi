@@ -51,7 +51,7 @@ const SignUpSuite = () => {
                 try {
                     const response = await axios({
                         method: 'POST',
-                        url: 'http://localhost:3000/complete-profile',
+                        url: 'http://localhost:5000/complete-profile',
                         data: {
                             matricule,
                             address,
@@ -62,7 +62,7 @@ const SignUpSuite = () => {
                         withCredentials: true,
                     });
                     alert('Consumer successfully registered!');
-                    navigate('/login');
+                    navigate('/');
                 } catch (err) {
                     console.error(err);
                 }
