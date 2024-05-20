@@ -18,8 +18,8 @@ import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 //ASA
 
 
-import CreateNewRole from "../admin/create-new-role/CreateNewRole.tsx";
-import RolesManage from "../admin/roles-management/RolesManage.tsx";
+
+import RolesManagement from "../admin/RolesManagement.tsx";
 import UserManagement from "../admin/UsersManagement.tsx";
 import React from "react";
 
@@ -85,29 +85,15 @@ export const adminRoutes: RouteType[] = [
     },
     {
       path: "/roles",
-      element: <RolesManage />,
+      element: <RolesManagement />,
       state: "roles",
     
       sidebarProps: {
         icon: <GroupAddIcon />,
         displayText: "Roles Management",
         
-      },
-      child: [        {
-        index: true,
-        element: <RolesManage />,
-        state: "roles.index"
-      },
-        {
-          path: '/roles/createnewrole',
-          element: <CreateNewRole />,
-          state: "roles.createnewrole",
-          sidebarProps: {
-            displayText: "Create Role",
-          
-          }
-        }]
-    },
+      }},
+    
     {
       path: "/profile",
       element: <Profile />,

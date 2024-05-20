@@ -1,37 +1,59 @@
+
+
 <div class="col-6">
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="floatingInput" value="{{this.first_name}}" placeholder="First Name" name="first_name">
-      <label for="floatingInput">First Name</label>
-    </div>
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="floatingInput" value="{{this.first_name}}" placeholder="First Name" name="first_name">
+    <label for="floatingInput">First Name</label>
   </div>
-  <div class="col-6">
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="floatingInput" value="{{this.last_name}}" placeholder="Last Name" name="last_name">
-      <label for="floatingInput">Last Name</label>
-    </div>
+</div>
+<div class="col-6">
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="floatingInput" value="{{this.last_name}}" placeholder="Last Name" name="last_name">
+    <label for="floatingInput">Last Name</label>
   </div>
-  <div class="col-6">
-    <div class="form-floating mb-3">
-      <input type="email" class="form-control" id="floatingInput" value="{{this.email}}" placeholder="email@email.com" name="email">
-      <label for="floatingInput">Email</label>
-    </div>
+</div>
+<div class="col-6">
+  <div class="form-floating mb-3">
+    <input type="email" class="form-control" id="floatingInput" value="{{this.email}}" placeholder="Email" name="email" pattern="[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}">
+    <label for="floatingInput">Email</label>
   </div>
-  <div class="col-6">
-    <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="floatingInput" value="{{this.phone}}" placeholder="Phone" name="phone">
-      <label for="floatingInput">Phone</label>
-    </div>
-        <div class="form-floating mb-3">
-      <input type="text" class="form-control" id="floatingInput" value="{{this.password}}" placeholder="Password" name="password">
-      <label for="floatingInput">Password</label>
-    </div>
+</div>
+<div class="col-6">
+  <div class="form-floating mb-3">
+    <input type="text" class="form-control" id="floatingInput" value="{{this.phone}}" placeholder="Phone" name="phone" pattern="\+213[5-7][0-9]{8}">
+    <label for="floatingInput">Phone</label>
   </div>
-  <div class="col-12">
-    <div class="form-floating mb-3">
-      <textarea class="form-control" placeholder="Leave a comment here" id="comments" name="comments" style="height: 200px">{{this.comments}}</textarea>
-      <label for="comments">Description</label>
-    </div>
+</div>
+<div class="col-6">
+  <div class="form-floating mb-3">
+    <input type="password" class="form-control" id="floatingInput" placeholder="Password" name="password" value="{{this.password}}">
+    <label for="floatingInput">Password</label>
   </div>
-  <div class="col-12 d-grid">
-    <button class="btn btn-primary" type="submit">Submit</button>
+</div>
+<div class="col-6">
+  <div class="form-floating mb-3">
+    <input type="password" class="form-control" id="floatingInput" placeholder="Confirm Password" name="confirm_password">
+    <label for="floatingInput">Confirm Password</label>
   </div>
+</div>
+{{#if passwordMatch}}
+<div class="col-12">
+  <p class="text-danger">Passwords do not match</p>
+</div>
+{{/if}}
+<div class="col-12">
+  <div class="form-floating mb-3">
+    <select class="form-control" id="role" name="role">
+      <option value="rsr">RSR</option>
+      <option value="asa">ASA</option>
+      <option value="director">Director</option>
+      <option value="magasinier">Magasinier</option>
+      <option value="administrator">Administrator</option>
+      <option value="consommateur">Consommateur</option>
+    </select>
+    <label for="role">Role Selection</label>
+  </div>
+</div>
+<div class="col-12 d-grid">
+  <button class="btn btn-primary" type="submit">Submit</button>
+</div>

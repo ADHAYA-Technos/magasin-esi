@@ -5,59 +5,32 @@
   </ol>
 </nav>
 
-<div class="view-user p-5">
+<div class="container">
   {{#each rows}}
-  <div class="row mb-5">
-    <div class="col text-center">
-      <h3>{{this.name}}</h3>
+  <div class="card mb-4">
+    <div class="card-header">
+      <h5 class="card-title">{{this.name}}</h5>
     </div>
-  </div>
-  <div class="row">
-    <div class="col">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Full Name</th>
-         
-            <th scope="col">Email</th>
-            <th scope="col">Phone</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <th scope="row">{{this.name}}</th>
-            
-            <td>{{this.email}}</td>
-            <td>{{this.telephone}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div class="row">
-      <div class="col">
-        <b>Description :</b>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>User ID:</strong> {{this.userId}}</p>
+          <p><strong>Email:</strong> {{this.email}}</p>
+          <p><strong>Phone:</strong> {{this.telephone}}</p>
+          <p><strong>Address:</strong> {{this.address}}</p>
+        </div>
+        <div class="col-md-6">
+          <p><strong>Status:</strong> 
+            {{#if this.isActive}}
+              <span class="badge bg-success">Active</span>
+            {{else}}
+              <span class="badge bg-danger">Inactive</span>
+            {{/if}}
+          </p>
+          <p><strong>Service:</strong> {{this.service}}</p>
+        </div>
       </div>
     </div>
-    <div class="row">
-      <div class="col">
-        {{this.description}}
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col">
-        <b>Status :</b>
-      </div>
-    </div>
-      <div class="col">
-  {{#if this.isActive}}
-    active
-  {{else}}
-    inactive
-  {{/if}}
-</div>
-
-   
   </div>
   {{/each}}
 </div>

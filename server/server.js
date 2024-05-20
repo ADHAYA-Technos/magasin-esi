@@ -90,7 +90,36 @@ app.use(passport.session());
 const handlebars = exphbs.create({ extname: '.hbs' });
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
+// Routes
+router.get('/accounts/users', (req, res) => {
+  // Render and send the home page HTML
+  res.render('home');
+});
 
+router.get('/adduser', (req, res) => {
+  // Render and send the add user page HTML
+  res.render('add-user');
+});
+
+router.get('/edituser/:id', (req, res) => {
+  // Render and send the edit user page HTML
+  res.render('edit-user');
+});
+// Routes
+router.get('/', (req, res) => {
+  // Render and send the home page HTML
+  res.render('home');
+});
+
+router.get('/adduser', (req, res) => {
+  // Render and send the add user page HTML
+  res.render('add-user');
+});
+
+router.get('/edituser/:id', (req, res) => {
+  // Render and send the edit user page HTML
+  res.render('edit-user');
+});
 
 app.use(adminRoutes);
 app.use(RoleRoute);
@@ -129,36 +158,7 @@ app.get('/logout', (req, res) => {
     res.status(200).json({ message: 'You have been logged out' });
   });
 });
-// Routes
-router.get('/accounts/users', (req, res) => {
-  // Render and send the home page HTML
-  res.render('home');
-});
 
-router.get('/adduser', (req, res) => {
-  // Render and send the add user page HTML
-  res.render('add-user');
-});
-
-router.get('/edituser/:id', (req, res) => {
-  // Render and send the edit user page HTML
-  res.render('edit-user');
-});
-// Routes
-router.get('/', (req, res) => {
-  // Render and send the home page HTML
-  res.render('home');
-});
-
-router.get('/adduser', (req, res) => {
-  // Render and send the add user page HTML
-  res.render('add-user');
-});
-
-router.get('/edituser/:id', (req, res) => {
-  // Render and send the edit user page HTML
-  res.render('edit-user');
-});
 
 app.use('/', router);
 

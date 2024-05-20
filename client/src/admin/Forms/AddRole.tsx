@@ -14,13 +14,14 @@ import { useEffect } from 'react';
 import _ from 'lodash';
 import { Link, useLocation } from 'react-router-dom';
 import axios from 'axios';
+import { permission } from 'process';
 
-const CreateNewRole = () => {
-	
+const AddRole = () => {
+    const [value, setValue] = React.useState('1');
 	const [selectedRole, setSelectedRole] = useState({});
 	const [isEdited, setIsEdited] = useState(false);
 	const [data, setData] = useState([]);
-
+    const [permissions, setPermissions] = useState([]);
 	useEffect(() => {
 		async function fetchData() {
 			const response = await axios({
@@ -28,8 +29,9 @@ const CreateNewRole = () => {
 				url: 'http://localhost:5000/roles',
 				withCredentials: true,
 			});
+         
 			setData(response.data);
-			console.warn(response.data);
+			    
 		}
 		fetchData();
 	}, []);
@@ -71,7 +73,7 @@ const CreateNewRole = () => {
 			  })
 			: await axios({
 					method: 'PUT',
-					url: 'http://localhost:3000/admin/roles',
+					url: 'http://localhost:5000/admin/roles',
 					data: {
 						role: selectedRole.name,
 						color: selectedRole.color,
@@ -151,17 +153,17 @@ const CreateNewRole = () => {
 				} flex flex-col flex-grow h-full ml-5 bg-white rounded-lg overflow-y-auto`}>
 				<div className='flex flex-row items-center justify-center mt-6 mb-3'>
 					<p className='flex flex-grow mx-6 font-semibold text-Primary text-2xl '>
-						Modifier le rôle - " role "
+						Modifier le rôle 
 					</p>
 					{isEdited && (
 						<>
 							<button
-								className='flex flex-grow-0 items-center font-medium text-[12px] cursor-pointer h-8 border-[2px] border-Primary rounded-lg text-Primary py-4 px-4'
+								className='flex flex-grow-0 items-center font-medium text-[12px] cursor-pointer h-8 border-[2px] border-Primary rounded-lg text-Primary py-4 px-4 bg-red-600 text-white'
 								onClick={cancelChanges}>
 								Annuler
 							</button>
 							<button
-								className='flex flex-grow-0 items-center font-medium text-[12px] justify-center cursor-pointer h-8 bg-Primary border-[2px] border-Primary rounded-lg text-white mr-6 ml-4 py-4 px-4'
+								className='flex flex-grow-0 items-center font-medium text-[12px] justify-center cursor-pointer h-8 bg-Primary border-[2px] border-Primary rounded-lg text-white bg-green-800 mr-6 ml-4 py-4 px-4'
 								onClick={saveChanges}>
 								Enregistrer les modifications
 							</button>
@@ -317,48 +319,19 @@ const Permissions = ({ rolePermissions, handlePermissionsChange }) => {
 			<p className='font-semibold text-Primary ml-2'>
 				Permissions <span className='text-[#FF0000]'>*</span>
 			</p>
-			<Permission
-				id={1}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[0]}
-				handlePermissionChange={handlePermissionChange}
-			/>
-			<Permission
-				id={2}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[1]}
-				handlePermissionChange={handlePermissionChange}
-			/>
-			<Permission
-				id={3}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[2]}
-				handlePermissionChange={handlePermissionChange}
-			/>
-			<Permission
-				id={4}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[3]}
-				handlePermissionChange={handlePermissionChange}
-			/>
-			<Permission
-				id={5}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[4]}
-				handlePermissionChange={handlePermissionChange}
-			/>
-			<Permission
-				id={6}
-				title='Permission Title'
-				description="Les utilisateurs pourront soumettre des projet et suivre de l'état d'approbation"
-				isOpen={permissions[5]}
-				handlePermissionChange={handlePermissionChange}
-			/>
+
+            {rolePermissions.map(permission => (
+
+                <Permission
+                    id={permission.id}
+                    title={permission}
+                    description={permission.description}
+                    isOpen={permission.isOpen}
+                    handlePermissionChange={handlePermissionChange}
+                />
+            ))};
+		
+			
 		</div>
 	);
 };
@@ -395,7 +368,7 @@ const Permission = ({
 				</p>
 				<DarkSwitch
 					className='flex-grow-0 flew-shrink'
-					checked={checked}
+					checked={true}
 					onChange={handleChange}
 					inputProps={{ 'aria-label': 'controlled' }}
 				/>
@@ -419,4 +392,4 @@ const DarkSwitch = styled(Switch)(({ theme }) => ({
 	},
 }));
 
-export default CreateNewRole;
+export default AddRole;

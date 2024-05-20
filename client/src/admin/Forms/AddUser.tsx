@@ -202,22 +202,15 @@ const [service,setService]=useState('Administration');
 				},
 				withCredentials: true,
 			});
+			alert('User created/modified successfully');
 			setUserData(response.data);
+			
 		} catch (err) {
 			alert(err.response.data.message);
 		}
 	};
 	const handleCreate = async (e) => {
-        console.warn(
-            matricule,
-            name,
-            address,
-            email,
-            password,
-            phone,
-            service,
-            { userType: 'consommateur', roles: userRoles }
-        );
+        
 		e.preventDefault();
 		try {
 			const response = await axios({

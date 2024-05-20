@@ -40,6 +40,7 @@ export async function createUser(req, res) {
             isActive: true,
             isCompleted: true,
             isBlocked: false,
+            service
         });
 
         const newRolesIds = await Promise.all(
