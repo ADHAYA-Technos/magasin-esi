@@ -43,12 +43,8 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
 };
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
-
-<<<<<<< HEAD
 export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
-=======
 export const  RSR: ReactNode = generateRoute(rsrRoutes);
 export const DIRECTOR: ReactNode = generateRoute(directorRoutes);
-
->>>>>>> aadca5b038b356a56f0ae69523035f05159894ae
-
+export const CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
+export const CHFEFSERVICE: ReactNode = generateRoute(chef_serviceRoutes);

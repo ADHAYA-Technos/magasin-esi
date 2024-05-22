@@ -1,11 +1,6 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout.tsx";
-<<<<<<< HEAD
-
-import {ASAROUTES,MAGASINIERROUTES,ADMINROUTES} from "./routes/index.tsx";
-=======
-import {ASAROUTES,MAGASINIERROUTES,RSR,DIRECTOR,CONSOMATEUR} from "./routes/index.tsx";
->>>>>>> aadca5b038b356a56f0ae69523035f05159894ae
+import { ASAROUTES, MAGASINIERROUTES, ADMINROUTES,CONSOMATEUR,RSR,DIRECTOR,CHFEFSERVICE } from "./routes/index.tsx";
 import React from "react";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
