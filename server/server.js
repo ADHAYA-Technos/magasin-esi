@@ -1,48 +1,95 @@
-import express from "express";
-import nodemailer from 'nodemailer';
+import express from 'express';
+
 import exphbs from 'express-handlebars';
+import cors from 'cors';
+import session from 'express-session';
+import dotenv from 'dotenv';
+import connectSessionSequelize from 'connect-session-sequelize';
+import cookieParser from 'cookie-parser';
+
 import router from './routes/user.js';
-import cors from "cors";
-import session from "express-session";
-import dotenv from "dotenv";
-import UserRoute from "./routes/userRoute.js"
-import RoleRoute from "./routes/roleRoute.js"
-import Database from "./config/Database.js";
-import AuthRoutes from "./routes/authRoutes.js"
-import {  getUsers, getUser,createUser,updateUser,deleteUser ,loginUser,fetchRoles,fetchPermissions,fetchFunctions} from "./database.js";
-import { fetchChapitres,fetchArticlesByChapitre, fetchProductsByArticle,createBon,createCommandeRows, fetchBonsWithDetails ,deleteBons, fetchCommandesByBon, updateBon, createChapitre, updateChapitre, deleteChapitre, updateArticle, createArticle, deleteArticle, deleteProduct, updateProduct, addProduct, fetchProducts, createBonRec, createReceptionRows, fetchBonRec, fetchFournisseurs, deleteBonRec, fetchReceptionsByBonRec, updateBonRec, updateReceptionRows, fetchBCIsWithDetails, createBciRows, createBCI, fetchLigneBCIByBonRec, deleteBCIs, updateBCIRows, updateBCI, associateProduct} from "./controllers/capfControllers.js";
-const app = express()
-const port = 5000
+import RoleRoute from './routes/roleRoute.js';
+import adminRoutes from './routes/adminRoutes.js';
+import ensureAuthenticated from './middleware/ensureAuthenticated.js';
+import checkCompleted from './middleware/checkCompleted.js';
+import passport from './config/passportConfig.js';
+import Database from './config/Database.js';
+import UserController from './controllers/UserController.js';
+
+import {
+  fetchChapitres,
+  fetchArticlesByChapitre,
+  fetchProductsByArticle,
+  createBon,
+  createCommandeRows,
+  fetchBonsWithDetails,
+  deleteBons,
+  fetchCommandesByBon,
+  updateBon,
+  createChapitre,
+  updateChapitre,
+  deleteChapitre,
+  updateArticle,
+  createArticle,
+  deleteArticle,
+  deleteProduct,
+  updateProduct,
+  addProduct,
+  fetchProducts,
+  createBonRec,
+  createReceptionRows,
+  fetchBonRec,
+  fetchFournisseurs,
+  deleteBonRec,
+  fetchReceptionsByBonRec,
+  updateBonRec,
+  updateReceptionRows,
+  fetchBCIsWithDetails,
+  createBciRows,
+  createBCI,
+  fetchLigneBCIByBonRec,
+  deleteBCIs,
+  updateBCIRows,
+  updateBCI,
+  associateProduct
+} from './controllers/capfControllers.js';
+
 dotenv.config();
 
-app.use(express.urlencoded({extended: true}));
-const handlebars = exphbs.create({ extname: '.hbs',});
+const app = express();
+const port = 5000;
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public'));
+app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+app.use(cookieParser('secret'));
+
+const SequelizeStore = connectSessionSequelize(session.Store);
+const store = new SequelizeStore({
+  db: Database,
+});
+
+store.sync();
+
+app.use(
+  session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: true,
+    store: store,
+    cookie: {
+      maxAge: 24 * 60 * 60 * 1000,
+    },
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+const handlebars = exphbs.create({ extname: '.hbs' });
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
-app.use(express.static("public")) 
-app.use(express.json());
-(async()=>(
-  await Database.sync()
-  ))
-   ();
-app.use(UserRoute);
-app.use(AuthRoutes);
-app.use(RoleRoute);
-import path from 'path';
- 
-app.use(cors({
-  origin: "http://localhost:3000",
-  credentials: true,
-}));
-
-app.use(session({
-  secret:process.env.SESS_SECRET,
-  resave : false,
-  saveUninitialized :true,
-  cookie: {
-    secure: 'auto', }
-}));
-
 // Routes
 router.get('/accounts/users', (req, res) => {
   // Render and send the home page HTML
@@ -74,56 +121,49 @@ router.get('/edituser/:id', (req, res) => {
   res.render('edit-user');
 });
 
+app.use(adminRoutes);
+app.use(RoleRoute);
+
+app.get('/check-authentication', async (req, res) => {
+  if (req.isAuthenticated()) {
+    let roles = await req.user.getRoles();
+    roles = roles.map((role) => role.dataValues.role.toLowerCase());
+    res.status(200).send({
+      state: true,
+      roles,
+      type: req.user.dataValues.userType,
+      user: req.user,
+    });
+  } else {
+    res.status(401).send({ state: false });
+  }
+});
+
+app.post('/sign-up', UserController.createUser);
+app.get('/verify-email', UserController.verifyUser);
+app.post('/login', [passport.authenticate('local')], (req, res) => {
+  res.status(200).json(req.user);
+});
+
+app.post('/reset-password-request', UserController.requestPasswordReset);
+app.post('/reset-password', UserController.resetPassword);
+app.post(
+  '/complete-profile',
+  [ensureAuthenticated, checkCompleted],
+  UserController.completeUser
+);
+
+app.get('/logout', (req, res) => {
+  req.logout(() => {
+    res.status(200).json({ message: 'You have been logged out' });
+  });
+});
+
+
 app.use('/', router);
 
 
 
-// Handle user registration
-app.post('/register', async (req, res) => {
-  const { username, email, password } = req.body;
-  try {
-      // Save the user to the database
-      const result = await createUser({ username, email, password });
-
-      if (result === true) {
-          // User registered successfully
-          res.json({ success: true });
-            // Send confirmation email to the user
-     /* await transporter.sendMail({
-          from: 'yacinmca32000@gmail.com',
-          to: email,
-          subject: 'ESI-STORE | Registration Confirmation',
-          text: 'Thank you for registering. Your registration will be processed by the admin.',
-      });*/
-      } else if (result === 'duplicate') {
-          // User is already registered
-          res.json({ success: false, message: 'User already registered.' });
-      } else {
-          // User registration failed due to an error
-          res.status(500).json({ success: false, error: 'An error occurred during registration.' });
-      }
-  } catch (error) {
-      console.error('Registration error:', error);
-      res.status(500).json({ success: false, error: 'An error occurred during registration.' });
-  }
-});
-
- //login user
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
-  console.log(email, password);
-  try {
-    const isAdmin = await loginUser(email, password);
-    if (isAdmin !== null) {
-      res.json({ isAdmin });
-    } else {
-      res.status(401).json({ error: 'Invalid username or password' });
-    }
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ error: 'An error occurred' });
-  }
-});
 //fetch roles then permissions then functions
 app.get('/api', async (req, res) => {
   try {
@@ -570,10 +610,10 @@ app.get('/api/getBCIs', async (req, res) => {
 //Create BCI 
 app.post('/api/createBCI', async (req, res) => {
   
-  const { type,dateCreation } = req.body;
+  const { userId,type,dateCreation } = req.body;
   
   try {
-    const bciId = await createBCI(type,dateCreation);
+    const bciId = await createBCI(userId,type,dateCreation);
     res.status(201).json({ bciId });
   } catch (error) {
     console.error('Error creating bon:', error);

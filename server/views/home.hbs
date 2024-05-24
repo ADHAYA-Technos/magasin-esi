@@ -1,6 +1,6 @@
-{{#if removedUser}}
+{{#if removed}}
 <div class="alert alert-success alert-dismissible fade show" role="alert">
-  User has been removed.
+  {{removed}}
   <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
 </div>
 {{/if}}
@@ -25,7 +25,6 @@
     </tr>
   </thead>
   <tbody>
-
     {{#each rows}}
     <tr>
       <th scope="row">{{this.userId}}</th>
@@ -34,12 +33,10 @@
       <td>{{this.telephone}}</td>
       <td class="text-end">
         <a href="/viewuser/{{this.userId}}" type="button" class="btn btn-light btn-small"><i class="bi bi-eye"></i> View</a>
-        <a href="/edituser/{{this.userId}}" type="button" class="btn btn-light btn-small"><i class="bi bi-pencil"></i>
-          Edit</a>
-        <a href="/{{this.userId}}" type="button" class="btn btn-light btn-small"><i class="bi bi-person-x"></i> Delete</a>
+        <a href="/edituser/{{this.userId}}" type="button" class="btn btn-light btn-small"><i class="bi bi-pencil"></i> Edit</a>
+        <a href="/deleteuser/{{this.userId}}" type="button" class="btn btn-light btn-small"><i class="bi bi-person-x"></i> Delete</a>
       </td>
     </tr>
     {{/each}}
-
   </tbody>
 </table>

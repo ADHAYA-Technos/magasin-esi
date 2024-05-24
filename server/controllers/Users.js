@@ -1,6 +1,6 @@
-import Roles from "../models/roleModel.js";
-import Users from "../models/userModel.js";
-import UserRole from "../models/userRoleModel.js"; // Import the UserRole model if you created one
+import Roles from "../models/Role.js";
+import Users from "../models/User.js";
+import UserRole from "../models/UserRoles.js"; // Import the UserRole model if you created one
 import argon2 from "argon2";
 
 export const getUsers = async (req, res) => {

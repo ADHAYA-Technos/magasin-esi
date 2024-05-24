@@ -29,6 +29,7 @@ interface OrderRecipient {
   quantities: number[];
 }
 const AddBCI: React.FC<Props> = ({ goBack }) => {
+
   const [products, setProducts] = useState<Product[]>([]);
   const [unselectedProducts, setUnselectedProducts] = useState<Product[][]>([]);
   const [orderRecipient, setOrderRecipient] = useState<OrderRecipient>({
@@ -40,6 +41,8 @@ const AddBCI: React.FC<Props> = ({ goBack }) => {
   const currentDate = new Date();
   const formattedDate = currentDate.toISOString().split("T")[0];
   const [type, setType] = React.useState("");
+  const [user, setUser] = useState({});
+
   useEffect(() => {
     fetch(`/api/products`)
       .then((response) => response.json())
@@ -59,7 +62,22 @@ const AddBCI: React.FC<Props> = ({ goBack }) => {
       })
       .catch((error) => console.error("Error fetching products:", error));
   }, []);
-
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const response = await axios({
+          method: 'GET',
+          url: 'http://localhost:3000/check-authentication',
+          withCredentials: true,
+        });
+        console.warn(response.data.user);
+        setUser(response.data.user);
+      } catch (err) {
+     
+      }
+    };
+    checkAuthentication();
+  }, []);
   const handleAddRow = () => {
     // allow adding the first row without conditions
     if (orderRecipient.products.length === 0) {
@@ -276,6 +294,7 @@ const AddBCI: React.FC<Props> = ({ goBack }) => {
       }
 
       const bonResponse = await axios.post("/api/createBCI", {
+        userId:user.userId,
         type: type === "S" ? "Sortie" : "Décharge",
         dateCreation: formattedDate,
       });

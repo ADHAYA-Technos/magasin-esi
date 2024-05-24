@@ -1,5 +1,5 @@
 import express from 'express';
-import { view, find, form, create, edit, update, viewall, deleteUser } from '../controllers/userControllers.js';
+import { view, find, form, create, edit, update, viewall, deleteUser, deleteUserAndAssociations } from '../controllers/userControllers.js';
 
 const router = express.Router();
 
@@ -11,6 +11,10 @@ router.post('/adduser', create);
 router.get('/edituser/:id', edit);
 router.post('/edituser/:id', update);
 router.get('/viewuser/:id', viewall);
-router.get('/:id', deleteUser);
+router.get('/deleteuser/:id', deleteUser);
+router.post('/deleteuser/:id/confirm', (req, res) => {
+  const userId = req.params.id;
+  deleteUserAndAssociations(userId, res);
+});
 
 export default router;
