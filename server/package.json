@@ -13,6 +13,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@mui/x-charts": "^7.4.0",
     "argon2": "^0.40.1",
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
