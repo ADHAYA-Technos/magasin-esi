@@ -15,6 +15,7 @@ import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import ReceiptIcon from "@mui/icons-material/Receipt";
 
 //CONSOMATEUR
+import Statistic from "../Director/statistics/statistics.tsx";
 
 import BciManagement from "../Director/bciValidation.tsx";
 import React from "react";
@@ -72,6 +73,15 @@ export const directorRoutes: RouteType[] = [
     state: "bci",
     sidebarProps: {
       displayText: "BCI Validation",
+      icon: <ReceiptIcon />,
+    },
+  },
+  {
+    path: "/Statistic",
+    element: <Statistic />,
+    state: "Statistic",
+    sidebarProps: {
+      displayText: "Statistic",
       icon: <ReceiptIcon />,
     },
   },

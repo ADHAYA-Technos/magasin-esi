@@ -10,6 +10,7 @@ import PageIllustration from "./pages/LoginSignUp/PageIllustration.jsx";
 import { LinearProgress, Stack } from "@mui/material";
 import ResetPassword from "./pages/LoginSignUp/ResetPassword.tsx";
 
+
 function App() {
   const [loading, setLoading] = useState(true);
   const [authenticated, setAuthenticated] = useState(false);
@@ -60,7 +61,6 @@ function App() {
     <BrowserRouter>
       <Routes>
 
-       
         <Route path="/emailConfirmation" element={<EmailConfirmation />}/>
 
           
@@ -97,6 +97,7 @@ function App() {
           </Route>
         ) : (
           <Route path="/" element={<LoginSignUp />} />
+
         )}
       </Routes>
     </BrowserRouter>
