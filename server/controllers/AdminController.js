@@ -5,15 +5,31 @@ import Users from '../models/User.js';
 import Roles from '../models/Role.js';
 import ASA from '../models/ASA.js';
 import Director from '../models/Director.js';
-import Magasinier from '../models/Magasinier.js';
+import MAGASINIER from '../models/Magasinier.js';
 import RSR from '../models/RSR.js';
 import Consommateur from '../models/Consommateur.js';
-
+import multer from 'multer';
 export async function createUser(req, res) {
     try {
-        const { email, password: plainPassword, userType, name, address, telephone, structure, roles, matricule, service } = req.body;
+        const {
+            email,
+            password: plainPassword,
+            userType,
+            name,
+            address,
+            telephone,
+            structure,
+            roles: rolesString,
+            matricule,
+            service,
+        } = req.body;
+
         console.log(req.body);
-        if (!userType || !name  || !telephone || !roles.length ) {
+
+        // Parse roles string into an array
+        const roles = JSON.parse(rolesString);
+
+        if (!userType || !name || !telephone || !Array.isArray(roles) || !roles.length) {
             return res.status(400).json({ message: 'All fields are required' });
         }
 
@@ -26,6 +42,9 @@ export async function createUser(req, res) {
         const verificationKey = v4();
         const verificationDate = new Date();
 
+        // Save the file path if file is uploaded
+        const profilePicture = req.file ? req.file.path : null;
+
         user = await Users.create({
             email,
             password,
@@ -36,11 +55,12 @@ export async function createUser(req, res) {
             address,
             telephone,
             structure,
+            imageUrl: profilePicture,
             isVerified: true,
             isActive: true,
-            isCompleted: true,
+            isCompleted: false,
             isBlocked: false,
-            service
+            service,
         });
 
         const newRolesIds = await Promise.all(
@@ -49,41 +69,36 @@ export async function createUser(req, res) {
                 return roleRecord.roleId;
             })
         );
+
         await user.setRoles(newRolesIds);
 
-        switch (userType) {
-            case 'consommateur':
-                if (!matricule || !service) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
-                await user.createConsommateur({ matricule, service });
-                break;
-            case 'rsr':
-                if (!matricule || !service) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
-                await user.createRSR({ matricule, service });
-                break;
-            case 'director':
-                if (!matricule) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
-                await user.createDirector({ matricule });
-                break;
-            case 'magasinier':
-                if (!matricule) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
-                await user.createMagasinier({ matricule });
-                break;
-            case 'asa':
-                if (!matricule) {
-                    return res.status(400).json({ message: 'All fields are required' });
-                }
-                await user.createASA({ matricule });
-                break;
-            default:
-                return res.status(400).json({ message: 'Invalid user type' });
+        if (userType === 'consommateur') {
+            if (!matricule || !service) {
+                throw new Error('All fields are required for consommateur');
+            }
+            await user.createConsommateur({ matricule, service });
+        } else if (userType === 'rsr') {
+            if (!matricule || !service) {
+                throw new Error('All fields are required for rsr');
+            }
+            await user.createRSR({ matricule, service });
+        } else if (userType === 'director') {
+            if (!matricule) {
+                throw new Error('All fields are required for director');
+            }
+            await user.createDirector({ matricule });
+        } else if (userType === 'magasinier') {
+            if (!matricule) {
+                throw new Error('All fields are required for magasinier');
+            }
+            await user.createMAGASINIER({ matricule });
+        } else if (userType === 'asa') {
+            if (!matricule) {
+                throw new Error('All fields are required for asa');
+            }
+            await user.createASA({ matricule });
+        } else {
+            throw new Error('Invalid user type');
         }
 
         const transporter = createTransport({
@@ -108,9 +123,10 @@ export async function createUser(req, res) {
         return res.status(200).json({ message: 'User created successfully' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
+        return res.status(500).json({ message: 'Internal server error', error: error.message });
     }
 }
+
 
 // MODIFY USER
 export async function modifyUser(req, res) {
@@ -144,7 +160,7 @@ export async function modifyUser(req, res) {
             const {matricule } = req.body || director.dataValues;
             await director.update({matricule, service });
         }else if (userType === 'magasinier') {
-            const magasinier = await user.getMagasinier();
+            const magasinier = await user.getMAGASINIER();
             const {matricule } = req.body || magasinier.dataValues;
             await magasinier.update({matricule });
         }
@@ -204,7 +220,7 @@ export async function getUsers(req, res) {
                         ? await user.getRSR()
                         : type === 'asa'
                             ? await user.getASA() :
-                               type === 'magasinier'?await user.getMagasinier() : 
+                               type === 'magasinier'?await user.getMAGASINIER() : 
                                      await user.getDirector();
                 return {
                     ...user.dataValues,

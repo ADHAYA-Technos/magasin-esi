@@ -18,7 +18,7 @@ interface BCI {
     quantityPhysique: number;
     seuilMin : number ;
   };
-const EditBCI= ({ selectedBCIRow, goBack }) => {
+const EditBCI= ({ selectedBCIRow, goBack,userId }) => {
     const [bonData, setBonData] = useState<BCI>({
         bciId: 0,
         type:'',
@@ -86,7 +86,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
       
           
           await axios.put(`/api/UpdateBCI/${bonData.bciId}`, {
-            updatedCommandes
+            updatedCommandes , userId
           });
     
           alert('Changes saved successfully!');

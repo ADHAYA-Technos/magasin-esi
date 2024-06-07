@@ -114,10 +114,11 @@ export async function verifyUser(req, res) {
 
 export async function completeUser(req, res) {
     const { email } = req.user;
-    console.log(req.user);
+    
     const { matricule, address, telephone, userType, service } = req.body;
 
     if (!matricule || !address || !telephone || !userType || !service) {
+        console.log( req.body)
         return res.status(400).json({ message: 'All fields are required' });
     }
 
@@ -140,7 +141,7 @@ export async function completeUser(req, res) {
                 await user.createDirector({ matricule });
                 break;
             case 'magasinier':
-                await user.createMagasinier({ matricule });
+                await user.createMAGASINIER({ matricule });
                 break;
             case 'asa':
                 await user.createASA({ matricule });

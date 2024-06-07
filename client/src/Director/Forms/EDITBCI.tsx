@@ -16,6 +16,7 @@ interface BCI {
     productId: number;
     designation: string;
     demandedQuantity: number;
+    validated:number,
     quantityPhysique: number;
     seuilMin : number ;
   };
@@ -70,7 +71,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
     
         setProducts((prevProducts) => {
           const updatedProducts = [...prevProducts];
-          updatedProducts[index].demandedQuantity = parseInt(event.target.value); // Update with the parsed value
+          updatedProducts[index].validated = parseInt(event.target.value); // Update with the parsed value
           return updatedProducts;
         });
     
@@ -80,7 +81,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
          
           const updatedCommandes = products.map((product) => ({
             productId: product.productId,
-            demandedQuantity: product.demandedQuantity,
+            demandedQuantity: product.validated,
             dateCreation : formattedDate ,
             DR :'Director' 
           }));
@@ -121,17 +122,17 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
         <div className="border border-gray-300 rounded-md p-4 mb-4 w-full">
           <p className="text-gray-700 text-sm font-bold mb-1">Product:</p>
           <div className="mb-2">{product.designation}</div>
-          <p className="text-gray-700 text-sm font-bold mb-4">Demanded quantity:</p>
+          <p className="text-gray-700 text-sm font-bold mb-4">Accorded quantity:</p>
           <input
             type="number"
             min={0}
             max={product.quantityPhysique}
-            value={product.demandedQuantity}
+            value={product.validated}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />
-          <p className="text-red-500  placeholder:text-sm italic ">Available quantity :{product.quantityPhysique}  , Seuil :{product.seuilMin} </p>
-        
+          <p className="text-red-500 font-thin ">Available quantity :{product.quantityPhysique}  , Seuil :{product.seuilMin} </p>
+          <p className="text-red-500  placeholder:text-sm italic ">Demanded quantity:{product.demandedQuantity}</p>
         </div>
       </div>
     ))}

@@ -2,7 +2,7 @@ import Roles from "../models/Role.js";
 import Users from "../models/User.js";
 import UserRole from "../models/UserRoles.js"; // Import the UserRole model if you created one
 import argon2 from "argon2";
-
+import {uploadAttachement , uploadPicture} from '../middleware/uploadAttachement.js';
 export const getUsers = async (req, res) => {
     try {
         const users = await Users.findAll({
@@ -38,7 +38,9 @@ export const getUserById = async (req, res) => {
 }
 
 export const createUser = async (req, res) => {
-    const { name, email, password, confPassword, roles } = req.body;
+  
+    const { name, email, password, confPassword, roles ,data } = req.body;
+
     if (password !== confPassword) return res.status(400).json({ msg: "Password and Confirm Password do not match" });
     const hashPassword = await argon2.hash(password);
     try {
@@ -50,6 +52,12 @@ export const createUser = async (req, res) => {
         if (roles && roles.length > 0) {
             await newUser.setRoles(roles); // Assuming you have a setter method 'setRoles' in your User model
         }
+        
+            // Upload the file to the server
+            
+
+
+        
         res.status(201).json({ msg: "User created successfully" });
     } catch (error) {
         res.status(400).json({ msg: error.message });

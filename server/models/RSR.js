@@ -2,7 +2,7 @@ import { DataTypes } from 'sequelize';
 import  Database  from '../config/Database.js';
 import Consommateur from './Consommateur.js';
 const RSR = Database.define(
-	'RSR',
+	'RSRS',
 	{
 		
 		matricule: {

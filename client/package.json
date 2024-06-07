@@ -29,6 +29,8 @@
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",
     "file-saver": "^2.0.5",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.8.2",
     "lodash": "^4.17.21",
     "packages": "^0.0.8",
     "papaparse": "^5.4.1",

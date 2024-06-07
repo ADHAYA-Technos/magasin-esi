@@ -6,6 +6,7 @@ import BCIValidation from "../../RSR/bciValidation.tsx";
 import BCIsetShowAddBCIManagement from "../../Consommateur/bciManagement.tsx";
 import BceManagement from "../../service_achats/bceManagement.tsx";
 import UsersManagement from "../../admin/UsersManagement.tsx";
+import BrManagement from "../../service_achats/bceManagement.tsx";
 import React, { useEffect, useState } from "react";
 const HomePage = () => {
   const [loading, setLoading] = useState(true);
@@ -65,6 +66,10 @@ const HomePage = () => {
 
     {roles.includes('administrator') && <>
 <UsersManagement/>    
+    </>}
+
+    {roles.includes('magasinier') && <>
+<BrManagement/>    
     </>}
     </>
   );

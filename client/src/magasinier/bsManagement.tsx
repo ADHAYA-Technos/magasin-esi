@@ -25,10 +25,30 @@ const BSManagement: React.FC = () => {
   const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
   const [showEditBCI, setShowEditBCI] = useState<boolean>(false);
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon []>([]);
+  const [user, setUser] = useState();
   useEffect(() => {
-    fetchBons();
-    
+    checkAuthentication();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchBons();
+    }
+  }, [user]);
+  const checkAuthentication = async () => {
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: 'http://localhost:3000/check-authentication',
+        withCredentials: true,
+      });
+      
+      setUser(response.data.user.userId);
+      
+    } catch (err) {
+      
+    }
+  };
 
   const fetchBons = async () => {
     try {
@@ -39,7 +59,7 @@ const BSManagement: React.FC = () => {
         id: bon.bciId, // Use the index as a simple unique identifier
       }));
      
-      setBons(bonsWithIds.filter(bon => bon.isSeenByDR === 1 && bon.isSeenByRSR ===1 &&bon.isSeenByMag===0 && bon.typee ==='Sortie' ));
+      setBons(bonsWithIds.filter(bon => (bon.isSeenByDR === 1 && bon.isSeenByRSR ===1 &&bon.isSeenByMag===0)|| bon.userId===user && bon.typee ==='Sortie' ));
     } catch (error) {
       console.error('Error fetching bons:', error);
     }
@@ -82,11 +102,11 @@ const BSManagement: React.FC = () => {
     document.body.appendChild(link); // Required for Firefox
     link.click();
   };
-  const handleSelectionChange = (newSelection: GridRowId[]) => {
-     
-    setSelectedRows(newSelection[1]); 
+   const handleSelectionChange = (newSelection: GridRowId[]) => {
+ 
+    setSelectedRows(newSelection); 
     
-    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[1]));
+    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[0]));
     
   };
 

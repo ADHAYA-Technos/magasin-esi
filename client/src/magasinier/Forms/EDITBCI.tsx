@@ -17,6 +17,7 @@ interface BCI {
     demandedQuantity: number;
     quantityPhysique: number;
     seuilMin : number ;
+    validated :number ;
   };
 const EditBCI= ({ selectedBCIRow, goBack }) => {
     const [bonData, setBonData] = useState<BCI>({
@@ -27,7 +28,8 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
         quantities : [],
       });
       const [products, setProducts] = useState<Product[]>([]);
-      const [entered , setEntered] = useState<boolean[]>([]);
+      const [initialValidatedQuantities, setInitialValidatedQuantities] = useState<number[]>([]);
+      
       const currentDate = new Date();
       const formattedDate = currentDate.toISOString().split('T')[0];
      
@@ -53,8 +55,8 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
               if (Array.isArray(data)) {
                 
                 setProducts(data);
-                
-              
+                setInitialValidatedQuantities(data.map(product => product.validated));
+
               } else {
                 console.error('Invalid data format:', data);
               }
@@ -65,13 +67,21 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
   
 
       const handleQuantityChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
-        
+        if (event.target.value > initialValidatedQuantities.at(index).validated){
+            alert("The demanded quantity can't be greater than the validated quantity")
+            return 
+
+        }else{
+
+          setProducts((prevProducts) => {
+            const updatedProducts = [...prevProducts];
+            updatedProducts[index].validated = parseInt(event.target.value); // Update with the parsed value
+            return updatedProducts;
+          });
+        }
+
     
-        setProducts((prevProducts) => {
-          const updatedProducts = [...prevProducts];
-          updatedProducts[index].demandedQuantity = parseInt(event.target.value); // Update with the parsed value
-          return updatedProducts;
-        });
+      
     
       };
       const handleSaveChanges = async () => {
@@ -79,7 +89,7 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
          
           const updatedCommandes = products.map((product) => ({
             productId: product.productId,
-            demandedQuantity: product.demandedQuantity,
+            demandedQuantity: product.validated,
             dateCreation : formattedDate ,
             MAG : 'MAG' 
           }));
@@ -124,8 +134,8 @@ const EditBCI= ({ selectedBCIRow, goBack }) => {
           <input
             type="number"
             min={0}
-            max={ product.demandedQuantity}
-            value={product.demandedQuantity}
+            max={ initialValidatedQuantities.at(index)}
+            value={product.validated}
             onChange={(event) => handleQuantityChange(event, index)}
             className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
           />

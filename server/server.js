@@ -1,12 +1,10 @@
 import express from 'express';
-
 import exphbs from 'express-handlebars';
 import cors from 'cors';
 import session from 'express-session';
 import dotenv from 'dotenv';
 import connectSessionSequelize from 'connect-session-sequelize';
 import cookieParser from 'cookie-parser';
-
 import router from './routes/user.js';
 import RoleRoute from './routes/roleRoute.js';
 import adminRoutes from './routes/adminRoutes.js';
@@ -15,7 +13,7 @@ import checkCompleted from './middleware/checkCompleted.js';
 import passport from './config/passportConfig.js';
 import Database from './config/Database.js';
 import UserController from './controllers/UserController.js';
-
+import multer from 'multer';
 import {
   fetchChapitres,
   fetchArticlesByChapitre,
@@ -51,7 +49,16 @@ import {
   deleteBCIs,
   updateBCIRows,
   updateBCI,
-  associateProduct
+  associateProduct,
+  fetchNotifications,
+  updateBCIRRows,
+  fetchMontantTotal,
+  getTopServices,
+  getTopRequestedProducts,
+  getConsommateurWithMostBCIs,
+  getMostConsumedProductInPeriod,
+  getDistinctServices,
+  updateInventory
 } from './controllers/capfControllers.js';
 
 dotenv.config();
@@ -66,9 +73,7 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(cookieParser('secret'));
 
 const SequelizeStore = connectSessionSequelize(session.Store);
-const store = new SequelizeStore({
-  db: Database,
-});
+const store = new SequelizeStore({ db: Database });
 
 store.sync();
 
@@ -78,9 +83,7 @@ app.use(
     resave: false,
     saveUninitialized: true,
     store: store,
-    cookie: {
-      maxAge: 24 * 60 * 60 * 1000,
-    },
+    cookie: { maxAge: 24 * 60 * 60 * 1000 },
   })
 );
 
@@ -90,37 +93,9 @@ app.use(passport.session());
 const handlebars = exphbs.create({ extname: '.hbs' });
 app.engine('.hbs', handlebars.engine);
 app.set('view engine', '.hbs');
-// Routes
-router.get('/accounts/users', (req, res) => {
-  // Render and send the home page HTML
-  res.render('home');
-});
 
-router.get('/adduser', (req, res) => {
-  // Render and send the add user page HTML
-  res.render('add-user');
-});
-
-router.get('/edituser/:id', (req, res) => {
-  // Render and send the edit user page HTML
-  res.render('edit-user');
-});
-// Routes
-router.get('/', (req, res) => {
-  // Render and send the home page HTML
-  res.render('home');
-});
-
-router.get('/adduser', (req, res) => {
-  // Render and send the add user page HTML
-  res.render('add-user');
-});
-
-router.get('/edituser/:id', (req, res) => {
-  // Render and send the edit user page HTML
-  res.render('edit-user');
-});
-
+// Use the router
+app.use('/', router);
 app.use(adminRoutes);
 app.use(RoleRoute);
 
@@ -159,8 +134,6 @@ app.get('/logout', (req, res) => {
   });
 });
 
-
-app.use('/', router);
 
 
 
@@ -678,7 +651,7 @@ app.put('/api/updateBCI/:id', async (req, res) => {
     try {
       await updateBCI(bciId,updatedCommandes[0].MAG); // Pass updatedCommandesData to the function
       res.status(200).json({ message: 'Bon de Commande Interne Validated per Magasinier successfully' });
-      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+      await updateBCIRRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
     } catch (error) {
       console.error('Error updating BCI:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -689,7 +662,7 @@ app.put('/api/updateBCI/:id', async (req, res) => {
     try {
       await updateBCI(bciId,updatedCommandes[0].RSR); // Pass updatedCommandesData to the function
       res.status(200).json({ message: 'Bon de Commande Interne Validated per RSR successfully' });
-      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+      await updateBCIRRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
     } catch (error) {
       console.error('Error updating BCI:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -700,7 +673,7 @@ app.put('/api/updateBCI/:id', async (req, res) => {
     try {
       await updateBCI(bciId,updatedCommandes[0].DR); // Pass updatedCommandesData to the function
       res.status(200).json({ message: 'Bon de Commande Interne Validated per Director successfully' });
-      await updateBCIRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
+      await updateBCIRRows(bciId,updatedCommandes); // Pass updatedCommandesData to the function
     } catch (error) {
       console.error('Error updating BCI:', error);
       res.status(500).json({ error: 'Internal server error' });
@@ -719,6 +692,122 @@ app.put('/api/updateBCI/:id', async (req, res) => {
 
   
 
+});
+
+app.get('/notifications', async (req, res) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const notifications = await fetchNotifications(userId) ;
+    res.json({ notifications });
+  } catch (error) {
+    console.error('Error fetching notifications:', error.message);
+    res.status(500).json({ error: 'Failed to fetch notifications' });
+  }
+})
+
+app.get('/api/getMontant', async (req, res) => {
+  try {
+    fetchMontantTotal((error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch montant total' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching montant total:', error.message);
+    res.status(500).json({ error: 'Failed to fetch montant total' });
+  }
+});
+
+app.get('/api/getTopServices', async (req, res) => {
+  try {
+    getTopServices((error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch top services' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching top services:', error.message);
+    res.status(500).json({ error: 'Failed to fetch top services' });
+  }
+});
+
+app.get('/api/getTopRequestedProducts', async (req, res) => {
+  try {
+    getTopRequestedProducts((error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch top requested products' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching top requested products:', error.message);
+    res.status(500).json({ error: 'Failed to fetch top requested products' });
+  }
+});
+
+app.get('/api/getDistinctServices', async (req, res) => {
+  try {
+    getDistinctServices((error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch services' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching services:', error.message);
+    res.status(500).json({ error: 'Failed to fetch services' });
+  }
+});
+
+app.get('/api/getMostConsumedProductInPeriod', async (req, res) => {
+  const { service, startDate, endDate } = req.query;
+  try {
+    getMostConsumedProductInPeriod(service, startDate, endDate, (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch most consumed products' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching most consumed products:', error.message);
+    res.status(500).json({ error: 'Failed to fetch most consumed products' });
+  }
+});
+
+app.get('/api/getConsommateurWithMostBCIs', async (req, res) => {
+  const { service } = req.query;
+  try {
+    getConsommateurWithMostBCIs(service, (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to fetch consommateurs with most BCIs' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error fetching consommateurs with most BCIs:', error.message);
+    res.status(500).json({ error: 'Failed to fetch consommateurs with most BCIs' });
+  }
+});
+
+app.post('/api/updateInventory', async (req, res) => {
+  const products = req.body;
+  try {
+    updateInventory(products, (error, results) => {
+      if (error) {
+        return res.status(500).json({ error: 'Failed to update inventory' });
+      }
+      res.json(results);
+    });
+  } catch (error) {
+    console.error('Error updating inventory:', error.message);
+    res.status(500).json({ error: 'Failed to update inventory' });
+  }
 });
 app.listen(port, () => {
   console.log(`Example app listening on ports ${port}`)

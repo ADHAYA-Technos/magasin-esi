@@ -5,6 +5,7 @@ import Director from "./Director.js";
 import RSR from "./RSR.js";
 import ASA from "./ASA.js";
 import Structure from "./Structure.js";
+import MAGASINIER from "./Magasinier.js";
 
 
 const { DataTypes } = Sequelize;
@@ -119,6 +120,10 @@ Consommateur.belongsTo(Users, { foreignKey: 'userId' });
 
 Users.hasOne(RSR, { foreignKey: 'userId' });
 RSR.belongsTo(Users, { foreignKey: 'userId' });
+
+Users.hasOne(MAGASINIER, { foreignKey: 'userId' });
+MAGASINIER.belongsTo(Users, { foreignKey: 'userId' });
+
 
 Users.belongsTo(Structure, { foreignKey: 'structureId' });
 Structure.hasMany(Users, { foreignKey: 'structureId' });

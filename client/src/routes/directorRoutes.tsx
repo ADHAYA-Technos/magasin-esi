@@ -18,6 +18,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 
 import BciManagement from "../Director/bciValidation.tsx";
 import React from "react";
+import StatisticsDashboard from "../Director/Statistics/ServiceStatistics.tsx";
 
 export const directorRoutes: RouteType[] = [
   {
@@ -50,7 +51,7 @@ export const directorRoutes: RouteType[] = [
       },
       {
         path: "/dashboard/analytics",
-        element: <AnalyticsPage />,
+        element: <StatisticsDashboard />,
         state: "dashboard.analytics",
         sidebarProps: {
           displayText: "Analytic",

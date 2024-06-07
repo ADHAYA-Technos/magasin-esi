@@ -50,7 +50,7 @@ export const fetchFournisseurs = (callback) => {
 };
 export const fetchProductsByArticle = (articleId, callback) => {
   connection.query(
-    "SELECT p.productId ,p.designation,p.quantityPhysique FROM Products p join articles_products ap on p.productId = ap.productId where ap.articleId = ?",
+    "SELECT p.productId ,p.designation,p.quantityPhysique , p.quantityLogique FROM Products p join articles_products ap on p.productId = ap.productId where ap.articleId = ?",
     [articleId],
     (error, results) => {
       if (!error) {
@@ -731,6 +731,7 @@ export const fetchBCIsWithDetails = (callback) => {
     bci.typee,
     bci.isSeenByRSR,
     bci.isSeenByDR,
+    bci.userId,
     users.name AS name,
     users.service AS service,
     bci.isSeenByMag
@@ -748,17 +749,30 @@ JOIN
   );
 };
 
-export const createBCI = (userId,type, dateCreation) => {
+export const createBCI = (userId, type, dateCreation) => {
   return new Promise((resolve, reject) => {
     console.log(dateCreation);
     connection.query(
-      "INSERT INTO bci (typee,dateCreation,userId,isSeenByRSR,isSeenByMag ,isSeenByDR) VALUES (?,?,?,?,?,?)",
-      [type, dateCreation,userId, 0, 0, 0],
+      "INSERT INTO bci (typee, dateCreation, userId, isSeenByRSR, isSeenByMag, isSeenByDR) VALUES (?, ?, ?, ?, ?, ?)",
+      [type, dateCreation, userId, 0, 0, 0],
       (error, results) => {
         if (error) {
           reject(error);
         } else {
-          resolve(results.insertId); // Resolve with the ID of the newly created bon
+          const bciId = results.insertId; // Get the ID of the newly created bon
+          // Insert notification for the newly created BCI
+          const message = 'Your BCI has been created and is awaiting validation.';
+          connection.query(
+            "INSERT INTO notifications (bciId, userId, message) VALUES (?, ?, ?)",
+            [bciId, userId, message],
+            (notifError, notifResults) => {
+              if (notifError) {
+                reject(notifError);
+              } else {
+                resolve(bciId); // Resolve with the ID of the newly created bon
+              }
+            }
+          );
         }
       }
     );
@@ -793,7 +807,7 @@ export const createBciRows = (products) => {
 
 export const fetchLigneBCIByBonRec = (id, callback) => {
   connection.query(
-    `SELECT  p.productId , p.designation, lignebci.quantity as demandedQuantity , p.quantityPhysique , p.seuilMin
+    `SELECT  p.productId , p.designation, lignebci.quantity as demandedQuantity ,lignebci.validated as validated, p.quantityPhysique , p.seuilMin
     FROM lignebci 
     JOIN Products p ON lignebci.productId = p.productId
     WHERE lignebci.bciId = ?`,
@@ -860,68 +874,56 @@ export const deleteBCIs = (bciId) => {
   });
 };
 
-export const updateBCI = (bciId, dateCreation) => {
-  if (dateCreation === "RSR") {
-    return new Promise((resolve, reject) => {
-      console.log(dateCreation);
-      connection.query(
-        "UPDATE bci SET isSeenByRSR = ? where bciId = ?",
-        [1, bciId],
-        (error, results) => {
-          if (error) {
-            reject(error);
+export const updateBCI = (bciId, user) => {
+  return new Promise((resolve, reject) => {
+    // Determine the update query and message based on the user
+    let updateQuery;
+    let message;
+    if (user === "RSR") {
+      updateQuery = "UPDATE bci SET isSeenByRSR = ? WHERE bciId = ?";
+      message = "Your BCI has been validated by RSR.";
+    } else if (user === "MAG") {
+      updateQuery = "UPDATE bci SET isSeenByMag = ? WHERE bciId = ?";
+      message = "Your BCI is ready for collection.";
+    } else if (user === "Director") {
+      updateQuery = "UPDATE bci SET isSeenByDR = ? WHERE bciId = ?";
+      message = "Your BCI has been validated by the Director.";
+    } else {
+      reject(new Error("Invalid user role"));
+      return;
+    }
+
+    // Execute the update query
+    connection.query(updateQuery, [1, bciId], (error, results) => {
+      if (error) {
+        reject(error);
+      } else {
+        // Get the userId of the user who created the BCI
+        connection.query("SELECT userId FROM bci WHERE bciId = ?", [bciId], (userError, userResults) => {
+          if (userError) {
+            reject(userError);
           } else {
-            resolve(results.insertId); // Resolve with the ID of the newly created bon
+            const userId = userResults[0].userId;
+
+            // Insert the notification
+            connection.query(
+              "INSERT INTO notifications (bciId, userId, message) VALUES (?, ?, ?)",
+              [bciId, userId, message],
+              (notifError, notifResults) => {
+                if (notifError) {
+                  reject(notifError);
+                } else {
+                  resolve(results);
+                }
+              }
+            );
           }
-        }
-      );
+        });
+      }
     });
-  } else if (dateCreation === "MAG") {
-    return new Promise((resolve, reject) => {
-      connection.query(
-        "UPDATE bci SET isSeenByMag = ? where bciId = ?",
-        [1, bciId],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results.insertId); // Resolve with the ID of the newly created bon
-          }
-        }
-      );
-    });
-  } else if (dateCreation === "Director") {
-    return new Promise((resolve, reject) => {
-      console.log(dateCreation);
-      connection.query(
-        "UPDATE bci SET isSeenByDR = ? where bciId = ?",
-        [1, bciId],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results.insertId); // Resolve with the ID of the newly created bon
-          }
-        }
-      );
-    });
-  } else {
-    return new Promise((resolve, reject) => {
-      console.log(dateCreation);
-      connection.query(
-        "UPDATE bci SET dateCreation = ? where bciId = ?",
-        [dateCreation, bciId],
-        (error, results) => {
-          if (error) {
-            reject(error);
-          } else {
-            resolve(results.insertId); // Resolve with the ID of the newly created bon
-          }
-        }
-      );
-    });
-  }
+  });
 };
+
 
 export const updateBCIRows = (bciId, updatedCommandes) => {
   if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
@@ -952,8 +954,237 @@ export const updateBCIRows = (bciId, updatedCommandes) => {
     });
   });
 };
+export const updateBCIRRows = (bciId, updatedCommandes) => {
+  if (!Array.isArray(updatedCommandes) || updatedCommandes.length === 0) {
+    return Promise.reject("Products array is empty or not an array");
+  }
 
-export default {
+  // Create an array of promises for each update query
+  const updatePromises = updatedCommandes.map((updatedCommande) => {
+    const { productId, demandedQuantity } = updatedCommande;
+    const ligneBCIQuery =
+      "UPDATE lignebci set  validated = ? WHERE bciId = ? AND productId = ?";
+    const ligneBCIValues = [demandedQuantity, bciId, productId];
+
+    // Execute the queries sequentially
+    return new Promise((resolve, reject) => {
+      connection.query(
+        ligneBCIQuery,
+        ligneBCIValues,
+        (error, ligneBCIResults) => {
+          if (error) {
+            reject(error);
+          } else {
+            console.log(ligneBCIValues);
+            resolve(ligneBCIValues);
+          }
+        }
+      );
+    });
+  });
+};
+export const fetchNotifications = (userId) => {
+  
+  return new Promise((resolve, reject) => {
+    connection.query(
+      `SELECT id, users.name, message 
+       FROM notifications 
+       JOIN users ON users.userId = notifications.userId 
+       WHERE notifications.userId = ? 
+       ORDER BY notifications.createdAt DESC`,
+      [userId],
+      (error, results) => {
+        if (!error) {
+          resolve(results); // Resolve with the results
+        } else {
+          reject(error); // Reject with the error
+        }
+      }
+    );
+  });
+}
+
+
+export const fetchMontantTotal = (callback) => {
+  connection.query(
+    `
+    SELECT 
+      YEAR(b.dateCreation) as year, 
+      SUM(co.pu * co.quantity) AS totalPu
+    FROM 
+      Bon b
+    LEFT JOIN 
+      Commande co ON b.bonId = co.bonId
+    WHERE 
+      YEAR(b.dateCreation) BETWEEN 2018 AND 2024
+    GROUP BY 
+      YEAR(b.dateCreation)
+    ORDER BY 
+      YEAR(b.dateCreation);
+    `,
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getTopServices = (callback) => {
+  connection.query(
+    `
+    
+    SELECT u.service, COUNT(l.ligneBciId) AS totalLigneBci
+        FROM Users u
+        JOIN BCI b ON u.userId = b.userId
+        JOIN lignebci l ON b.bciId = l.bciId
+        GROUP BY u.service
+        ORDER BY totalLigneBci DESC
+        LIMIT 5;
+    `,
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getTopRequestedProducts = (callback) => {
+  connection.query(
+    `
+    SELECT p.designation, SUM(l.quantity) AS totalQuantity
+    FROM Products p
+    JOIN lignebci l ON p.productId = l.productId
+    GROUP BY p.designation
+    ORDER BY totalQuantity DESC
+    LIMIT 5;
+    `,
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getDistinctServices = (callback) => {
+  connection.query(
+    `SELECT DISTINCT service FROM Users WHERE service IS NOT NULL;`,
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getMostConsumedProductInPeriod = (service, startDate, endDate, callback) => {
+  connection.query(
+    `
+    SELECT p.designation, SUM(l.quantity) AS totalQuantity
+    FROM Products p
+    JOIN lignebci l ON p.productId = l.productId
+    JOIN BCI b ON l.bciId = b.bciId
+    JOIN User u ON b.userId = u.userId
+    WHERE u.service = ? AND b.dateCreation BETWEEN ? AND ?
+    GROUP BY p.designation
+    ORDER BY totalQuantity DESC
+    LIMIT 5;
+    `,
+    [service, startDate, endDate],
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getConsommateurWithMostBCIs = (service, callback) => {
+  connection.query(
+    `
+    SELECT u.name, COUNT(b.bciId) AS totalBCIs
+    FROM Users u
+    JOIN BCI b ON u.userId = b.userId
+    WHERE u.service = ?
+    GROUP BY u.name
+    ORDER BY totalBCIs DESC
+    LIMIT 5;
+    `,
+    [service],
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const getProductsByArticle = (articleId, callback) => {
+  connection.query(
+    `
+    SELECT p.productId, p.designation, p.quantityLogique, p.isConsommable
+    FROM Product p
+    WHERE p.articleId = ?;
+    `,
+    [articleId],
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
+export const updateInventory = (products, callback) => {
+  const queries = products.map((product) => {
+      // Validate quantityPhysique before generating the query
+    
+      return ` UPDATE Products SET quantityLogique = ${product.quantityPhysique}  WHERE productId = ${product.productId};`;
+  });
+
+  const executeQueries = (index = 0) => {
+      if (index < queries.length) {
+          connection.query(queries[index], (error, results) => {
+              if (error) {
+                  callback(error);
+              } else {
+                  executeQueries(index + 1);
+              }
+          });
+      } else {
+          callback(null, { message: 'All queries executed successfully' });
+      }
+  };
+
+  executeQueries();
+};
+
+
+export default {updateBCIRRows,
+  updateInventory,
+  getProductsByArticle,
+  getDistinctServices ,
+  getMostConsumedProductInPeriod,
+  getConsommateurWithMostBCIs,
+  getTopRequestedProducts,
+  getTopServices,
+  fetchNotifications,
   updateBCIRows,
   fetchChapitres,
   fetchArticlesByChapitre,

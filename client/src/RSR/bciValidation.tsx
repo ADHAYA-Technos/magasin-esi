@@ -9,6 +9,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddBCI from './Forms/AddBCI.tsx';
 import EditBCI from './Forms/EditBCI.tsx';
 import { renderBCIProgress } from '../render/renderBCIProgress.tsx';
+import { Parser } from 'papaparse';
   
 interface Bon {
   id: number;
@@ -25,20 +26,43 @@ const BCIValidation: React.FC = () => {
   const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
   const [showEditBCI, setShowEditBCI] = useState<boolean>(false);
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon []>([]);
+  const [user, setUser] = useState();
   useEffect(() => {
-    fetchBons();
-    
+    checkAuthentication();
   }, []);
 
+  useEffect(() => {
+    if (user) {
+      fetchBons();
+    }
+  }, [user]);
+  const checkAuthentication = async () => {
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: 'http://localhost:3000/check-authentication',
+        withCredentials: true,
+      });
+      
+      setUser(response.data.user);
+      
+    } catch (err) {
+      
+    }
+  };
   const fetchBons = async () => {
     try {
       const response = await axios.get('/api/getBCIs');
+     
       // Add a unique identifier to each row object
       const bonsWithIds = response.data.map((bon, index) => ({
         ...bon,
         id: bon.bciId, // Use the index as a simple unique identifier
       }));
-      setBons(bonsWithIds.filter(bon => bon.isSeenByRSR === 0));
+      console.warn(bonsWithIds)
+      const filteredBons = bonsWithIds.filter(bon => bon.service === user.service && (bon.isSeenByRSR === 0 || bon.userId === user.userId));
+    
+    setBons(filteredBons);
     } catch (error) {
       console.error('Error fetching bons:', error);
     }
@@ -84,9 +108,9 @@ const BCIValidation: React.FC = () => {
   };
   const handleSelectionChange = (newSelection: GridRowId[]) => {
      
-    setSelectedRows(newSelection[1]); 
+    setSelectedRows(newSelection); 
     
-    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[1]));
+    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[0]));
     
   };
 
@@ -173,7 +197,7 @@ const BCIValidation: React.FC = () => {
       </>
     )}
     {ShowAddBCI && <AddBCI goBack={handleGoBack} />}
-     {showEditBCI && <EditBCI selectedBCIRow={selectedRowForEdit[0]} goBack={handleGoBack} />} 
+     {showEditBCI && <EditBCI selectedBCIRow={selectedRowForEdit[0]} goBack={handleGoBack} userId={user}/>} 
   </>
   
   );

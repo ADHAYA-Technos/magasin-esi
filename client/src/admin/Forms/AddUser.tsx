@@ -87,14 +87,14 @@ const [service,setService]=useState('Administration');
 
 	const [email, setEmail] = useState('');
 	const [address, setAddress] = useState('');
-	const [phone, setPhone] = useState('');
+	const [phone, setPhone] = useState('+213');
 	const [institution, setInstitution] = useState('ESI-SBA');
 	const [userType, setUserType] = useState('');
 	const [password, setPassword] = useState('');
 
 
 
-	const [userRoles, setUserRoles] = React.useState([]);
+	const [userRoles, setUserRoles] = useState([]);
 
 	const [errorMessage, setErrorMessage] = useState('');
 
@@ -113,7 +113,6 @@ const [service,setService]=useState('Administration');
 		}
 	}, [userData]);
 
-	//useEffect(() => console.log(userRoles), [userRoles]);
 
 	const handleFileChange = (e) => {
 		setFile(e.target.files[0]);
@@ -126,23 +125,30 @@ const [service,setService]=useState('Administration');
 	};
 
 	const handlePhoneChange = (event) => {
-		const value = event.target.value;
-		setPhone(value);
-	};
-
+        const value = event.target.value;
+        const regex = /^\+213[4567]{1}[0-9]{0,9}$/;
+        
+        if (!regex.test(value)) {
+            setPhone("+213");
+            setErrorMessage('Phone number format should be +213[567]xxxxxxxx');
+        } else {
+            setPhone(value);
+            setErrorMessage('');
+        }
+    };
 	const [nameError, setNameError] = useState('');
-	const [surnameError, setSurnameError] = useState('');
 
 	const handleNameChange = (event) => {
 		const value = event.target.value;
-		const regex = /^[A-Za-z_]{1,50}$/;
+		const regex = /^[A-Za-z_ ]{1,50}$/;
 
 		if (regex.test(value)) {
 			setName(value);
 			setNameError('');
 		} else {
-			setName('');
+			
 			setNameError('Format de prénom invalide');
+			return ;
 		}
 	};
 
@@ -178,11 +184,9 @@ const [service,setService]=useState('Administration');
 			target: { value },
 		} = e;
 		setUserRoles(
-			// On autofill we get a stringified value.
 			typeof value === 'string' ? value.split(',') : value
 		);
-		//let blockRoles = roles.filter((role) => !e.target.value.includes(role));
-		//console.log(blockRoles);
+		
 	};
 
 	const handleEdit = async (e) => {
@@ -204,35 +208,46 @@ const [service,setService]=useState('Administration');
 			});
 			alert('User created/modified successfully');
 			setUserData(response.data);
+			window.location.reload();
 			
 		} catch (err) {
 			alert(err.response.data.message);
 		}
 	};
 	const handleCreate = async (e) => {
-        
 		e.preventDefault();
+		console.warn(userRoles[0])
+		const formData = new FormData();
+		if (file !== null) {
+			formData.append('file', file);
+		}
+		formData.append('matricule', matricule);
+		formData.append('name', name);
+		formData.append('email', email);
+		formData.append('password', password);
+		formData.append('telephone', phone);
+		formData.append('service', service);
+		formData.append('userType', userRoles[0]);
+		formData.append('roles', JSON.stringify(userRoles)); // Append roles as a JSON string
+	
 		try {
-			const response = await axios({
+			const res = await axios({
 				method: 'POST',
 				url: 'http://localhost:5000/users',
-				data: {
-					matricule,
-					name,
-					email,
-					password,
-					telephone: phone,
-					service,
-					userType: 'consommateur',
-					roles: userRoles,
+				data: formData,
+				headers: {
+					'Content-Type': 'multipart/form-data',
 				},
 				withCredentials: true,
 			});
-			setUserData(response.data);
+			setUserData(res.data);
+			alert("User created successfully");
+			window.location.reload();
 		} catch (err) {
 			alert(err.response.data.message);
 		}
 	};
+	
 
 	return (
 		<div className='flex flex-col h-auto bg-white rounded-lg'>
@@ -286,7 +301,7 @@ const [service,setService]=useState('Administration');
 									className='appearance-none font-medium mt-6 w-full bg-gray-200 text-#24272C border border-gray-200 rounded-lg leading-tight focus:outline-none focus:bg-white focus:border-gray-500'
 									id='grid-last-name'
 									type='text'
-									placeholder='Name'
+									placeholder='Full Name'
 									value={name}
 									onChange={handleNameChange}
 								/>
@@ -295,6 +310,7 @@ const [service,setService]=useState('Administration');
 										<p className='text-[12px]'>{nameError}</p>
 									</div>
 								)}
+								
 							</div>
                             </div>
 						</div>
@@ -367,6 +383,7 @@ const [service,setService]=useState('Administration');
 							<div className='w-full'>
 								<label
 									className=' font-semibold  block  text-#24272C text-xs  mb-1 mx-2'
+									
 									style={{ fontSize: '13px' }}
 									htmlFor='grid-Telephone'>
 									Téléphone <span className='text-[#FF0000]'>*</span>

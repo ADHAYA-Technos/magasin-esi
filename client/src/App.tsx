@@ -29,6 +29,7 @@ function App() {
         setRoles(response.data.roles);
         setUserType(response.data.type);
         setUser(response.data.user);
+        
         setLoading(false);
       } catch (err) {
         setLoading(false);
@@ -60,17 +61,15 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/verify-email" element={<EmailConfirmation />} />
-        <Route path="/SignUpSuite" element={<SignUpSuite />} />
+      <Route path="/SignUpSuite" element={<SignUpSuite />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         {authenticated ? (
           <Route path="/" element={<MainLayout />}>
-  
+  {ASAROUTES}
             {roles.includes('asa')?ASAROUTES:[]}
             {roles.includes('consommateur')?CONSOMATEUR:[]}
-            {/*roles.includes('rsr')?RSR:[]*/}
-            {RSR}
-            {DIRECTOR}
-            {/*roles.includes('director')?DIRECTOR:[]*/}
+            {roles.includes('rsr')?RSR:[]} 
+            {roles.includes('director')?DIRECTOR:[]}
             {roles.includes('administrator')?ADMINROUTES:[]}
             {roles.includes('magasinier')?MAGASINIERROUTES:[]}
           </Route>

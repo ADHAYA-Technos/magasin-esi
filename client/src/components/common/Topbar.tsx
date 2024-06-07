@@ -1,30 +1,47 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AppBar, Toolbar, Typography, Avatar } from "@mui/material";
 import NotificationButton from "./NotificationButton"; // Import your NotificationButton component
 import colorConfigs from "../../configs/colorConfigs";
+import axios from "axios";
+type notifications ={
+  id :String,
+  name:string,
+  message:string,
+  avatar:"avatar2.png"
 
+}
 const Topbar = () => {
-  const notifications = [
-    {
-      id: 1,
-      name: "dayt yasin",
-      message: "@lorem ipsum dolor sit amet df,",
-      avatar: "avatar1.png",
-    },
-    {
-      id: 2,
-      name: "John Doe",
-      message: "@lorem ipsum dolor sit amet",
-      avatar: "avatar2.png",
-    },
-    {
-      id: 3,
-      name: "Djaber",
-      message: "@lorem ipsum dolor sit amet",
-      avatar: "avatar3.png",
-    },
-    // Add more notifications as needed
-  ];
+  const [user, setUser] = useState<{ userId?: string }>({});
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  useEffect(() => {
+    const checkAuthentication = async () => {
+      try {
+        const response = await axios({
+          method: 'GET',
+          url: 'http://localhost:3000/check-authentication',
+          withCredentials: true,
+        });
+        console.warn(response.data.user);
+        setUser(response.data.user);
+      } catch (err) {
+        console.error("Authentication check failed:", err.message);
+      }
+    };
+    checkAuthentication();
+  }, []);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      if (!user.userId) return; // Wait until userId is available
+      try {
+        const response = await axios.get(`/notifications?userId=${user.userId}`);
+        setNotifications(response.data.notifications);
+      } catch (error) {
+        console.error("Failed to fetch notifications:", error.message);
+      }
+    };
+    fetchNotifications();
+  }, [user.userId]);
 
   return (
     <AppBar
@@ -49,9 +66,9 @@ const Topbar = () => {
           <Typography variant="body1" sx={{ mr: 1, fontWeight: 500 }}>
             John Doe
           </Typography>
-          {/* Use the NotificationButton component */}
+          
           <NotificationButton notifications={notifications} />
-          {/* End NotificationButton */}
+          
           <div
             style={{
               width: 1,

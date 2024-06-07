@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Autocomplete, TextField } from '@mui/material';
+import jsPDF from 'jspdf';
 
 interface Props {
   selectedRowIds: number[];
@@ -47,9 +48,11 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
           setChapitres(data);
         } else {
           console.error('Invalid data format:', data);
+          console.warn(data)
         }
       })
       .catch((error) => console.log(error));
+      
     fetch(`/api/fournisseurs`)
       .then((response) => response.json())
       .then((data) => {
@@ -107,6 +110,56 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
         }
       });
   };
+
+  const createPDF = (bonId) => {
+    const doc = new jsPDF();
+  
+    // Convert IDs to strings for comparison
+    const selectedChapitreObj = chapitres.find(c => c.chapitreId.toString() === orderRecipient.chapitre);
+    const selectedArticleObj = articles.find(a => a.articleId.toString() === orderRecipient.article);
+  
+    // Log the objects to verify the correct ones are found
+    console.log('Selected Chapitre:', selectedChapitreObj);
+    console.log('Selected Article:', selectedArticleObj);
+  
+    const chapitreLibelle = selectedChapitreObj ? selectedChapitreObj.libelle : 'N/A';
+    const articleDesignation = selectedArticleObj ? selectedArticleObj.designation : 'N/A';
+  
+    const fournisseur = fournisseurs.find(f => f.fournisseurId === orderRecipient.fournisseur);
+    const fournisseurName = fournisseur ? fournisseur.raisonSociale : 'N/A';
+  
+    // Header
+    doc.setFont('times', 'bold');
+    doc.text('Ministère de l\'Enseignement Supérieur et de la Recherche Scientifique', 20, 20);
+    doc.text('Ecole Supérieure en Informatique 8 Mai 1945, Sidi Bel-Abbés', 20, 30);
+    doc.text('Bon de commande externe', 20, 40);
+    doc.text('Chapitre: ' + chapitreLibelle, 20, 50);
+    doc.text('Article: ' + articleDesignation, 20, 60);
+    doc.text('Date: ' + formattedDate, 20, 70);
+  
+    // Fournisseur details
+    doc.setFont('times', 'normal');
+    doc.text('Fournisseur: ' + fournisseurName, 20, 80); 
+  
+    // Table of products
+    const tableData = orderRecipient.products.map((product, index) => {
+      return [index + 1, products.find(p => p.productId === product.productId)?.designation || 'N/A', orderRecipient.prices[index], orderRecipient.quantities[index]];
+    });
+    doc.autoTable({
+      startY: 90,
+      head: [['No', 'Product', 'Price', 'Quantity']],
+      body: tableData
+    });
+  
+    // Signatures
+    doc.text('Signature de Agent de Service d\'Achat', 20, doc.lastAutoTable.finalY + 20);
+    doc.text('Signature de Fournisseur', 140, doc.lastAutoTable.finalY + 20);
+  
+    // Save the PDF
+    doc.save(`BCE${bonId}.pdf`);
+  };
+  
+
 
   const handleFournisseurChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const fournisseurId = event.target.value;
@@ -280,7 +333,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
     }
     try {
       // Ensure that orderRecipient contains the necessary data
-      if (!orderRecipient.chapitre || !orderRecipient.article || !orderRecipient.fournisseur || filteredFournisseurs.length===0 ||orderRecipient.products.length === 0) {
+      if (!orderRecipient.chapitre || !orderRecipient.article || !orderRecipient.fournisseur  || orderRecipient.products.length === 0 || orderRecipient.products.some((product) => !product.productId)){
         window.alert(orderRecipient.fournisseur?'Please select a fournissor':'Please fill in all fields before confirming.');
         console.error('Error creating Bon and Commande rows: Incomplete data');
         return;
@@ -313,8 +366,11 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
       if (confirmed) {
         // Show message and go back if user confirms
         alert('Bon created successfully!');
+       await createPDF(bonId);
         goBack();
         window.location.reload();
+        // Generate the PDF with bonId
+      
       } else {
         // Show message only if user cancels
         alert('Bon creation canceled.');

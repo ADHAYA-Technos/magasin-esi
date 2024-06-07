@@ -24,7 +24,7 @@ const ResetPassword = () => {
                 token: token,
                 password,
             });
-            alert('Password reset successfully');
+            alert('Password reset successfully ,Check your email');
             navigate('/');
         } catch (error) {
             console.error(error);

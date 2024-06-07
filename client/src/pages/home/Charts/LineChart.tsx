@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { LineChart } from '@mui/x-charts/LineChart';
+import axios from 'axios';
 
-// const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
-const montantTotal = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
 const annees = [
   '2018',
   '2019',
@@ -14,16 +13,35 @@ const annees = [
 ];
 
 export default function SimpleLineChart() {
+  const [montantTotal, setMontantTotal] = React.useState<number[]>([]);
+
+  React.useEffect(() => {
+    fetchMontant();
+  }, []);
+
+  const fetchMontant = async () => {
+    try {
+      const response = await axios.get('/api/getMontant');
+      const fetchedData = response.data.reduce((acc, item) => {
+        acc[item.year] = item.totalPu;
+        return acc;
+      }, {});
+      
+      const filledData = annees.map(year => fetchedData[year] || 0);
+      setMontantTotal(filledData);
+    } catch (error) {
+      console.error('Error fetching montant total:', error);
+    }
+  };
+
   return (
     <LineChart
-      
       width={1000}
       height={300}
       series={[
-        { data: montantTotal, label: ' Montant total (DA) ' },        
+        { data: montantTotal, label: 'Montant total (DA)' },
       ]}
       xAxis={[{ scaleType: 'point', data: annees }]}
-      
     />
   );
 }

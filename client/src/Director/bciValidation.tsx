@@ -20,15 +20,35 @@ interface Bon {
 }
 
 const BCIValidation: React.FC = () => {
-  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectedRows, setSelectedRows] = useState();
   const [bons, setBons] = useState<Bon[]>([]);
   const [ShowAddBCI, setShowAddBCI] = useState<boolean>(false);
   const [showEditBCI, setShowEditBCI] = useState<boolean>(false);
   const [selectedRowForEdit, setSelectedRowForEdit] = useState<Bon []>([]);
+  const [user, setUser] = useState();
   useEffect(() => {
-    fetchBons();
-    
+    checkAuthentication();
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchBons();
+    }
+  }, [user]);
+  const checkAuthentication = async () => {
+    try {
+      const response = await axios({
+        method: 'GET',
+        url: 'http://localhost:3000/check-authentication',
+        withCredentials: true,
+      });
+      
+      setUser(response.data.user.userId);
+      
+    } catch (err) {
+      
+    }
+  };
 
   const fetchBons = async () => {
     try {
@@ -39,7 +59,7 @@ const BCIValidation: React.FC = () => {
         id: bon.bciId, // Use the index as a simple unique identifier
       }));
      
-      setBons(bonsWithIds.filter(bon => bon.isSeenByDR === 0 && bon.isSeenByRSR ===1));
+      setBons(bonsWithIds.filter(bon => (bon.isSeenByDR === 0 && bon.isSeenByRSR ===1) || bon.userId===user));
     } catch (error) {
       console.error('Error fetching bons:', error);
     }
@@ -84,10 +104,10 @@ const BCIValidation: React.FC = () => {
     link.click();
   };
   const handleSelectionChange = (newSelection: GridRowId[]) => {
-     
-    setSelectedRows(newSelection[1]); 
+ 
+    setSelectedRows(newSelection); 
     
-    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[1]));
+    setSelectedRowForEdit(bons.filter(bon =>bon.id === newSelection[0]));
     
   };
 
@@ -126,7 +146,8 @@ const BCIValidation: React.FC = () => {
   const handleEditBCI = () => {
    
     if (selectedRowForEdit.length === 1) {
-     
+      
+
       setShowEditBCI (true);
       
      
@@ -160,7 +181,7 @@ const BCIValidation: React.FC = () => {
         </div>
         <Box sx={{ '& > :not(style)': { m: 1 } }} >
         <button style={{ backgroundColor: 'blue', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleAddBCI}>
-      Add BR
+      Add BCI
     </button>
     <button style={{ backgroundColor: 'green', color: 'white', padding: '10px', border: 'none', borderRadius: '5px', cursor: 'pointer' }} onClick={handleEditBCI}>
       Validate BCI

@@ -14,7 +14,7 @@ const NotificationButton = ({ notifications }) => {
     
     switch (id) {
       case 1:
-        window.location.href = '/page1';
+        window.location.href = '/page';
         break;
       case 2:
         window.location.href = '/page2';

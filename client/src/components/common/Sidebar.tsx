@@ -60,10 +60,19 @@ const navigate = useNavigate();
       <List disablePadding>
         <Toolbar sx={{ marginBottom: "20px" }}>
           <Stack sx={{ width: "100%" }} direction="row" justifyContent="center">
-            <Avatar src={assets.image.logo} />
+            <Avatar src={assets.image.logo}  sx={{ width: 100, height: 100 }}/>
           </Stack>
         </Toolbar>
 
+        {roles.includes("administrator") ? adminRoutes.map((route, index) =>
+        route.sidebarProps ? (
+          route.child ? (
+            <SidebarItemCollapse item={route} key={index} />
+          ) : (
+            <SidebarItem item={route} key={index} />
+          )
+        ) : null
+      ):<></>}
         {roles.includes("magasinier")
           ? magasinierRoutes.map((route, index) =>
               route.sidebarProps ? (
@@ -102,7 +111,7 @@ const navigate = useNavigate();
             )
           ) : null
         ):<></>}
-        { adminRoutes.map((route, index) =>
+ {roles.includes("rsr") ? rsrRoutes.map((route, index) =>
         route.sidebarProps ? (
           route.child ? (
             <SidebarItemCollapse item={route} key={index} />
@@ -110,7 +119,7 @@ const navigate = useNavigate();
             <SidebarItem item={route} key={index} />
           )
         ) : null
-      )}
+      ):<></>}
       <ListItem className="flex justify-end top-72 left-20">
           <Button onClick={handleLogout}>
             <ListItemText primary="Logout" />

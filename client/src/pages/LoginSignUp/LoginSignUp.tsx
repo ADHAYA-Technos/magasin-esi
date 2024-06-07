@@ -31,7 +31,7 @@ const LoginSignUp = (props: Props) => {
 					withCredentials: true,
 				});
 				alert(response.data.message);
-				navigate('/SignUpSuite', { replace: true });
+				navigate('/', { replace: true });
 			}
 		};
 		verify();
@@ -108,7 +108,7 @@ const LoginSignUp = (props: Props) => {
         setRegistrationMessage('Please use a valid @esi-sba.dz email address.');
         return;
       }*/
-      const response = await axios.post('/sign-up', { username, email, password ,userType:"administrator"});
+      const response = await axios.post('/sign-up', { username, email, password ,userType:"consommateur"});
       if (response.data.userId) {
         setOpen(true);
         setRegistrationSuccess(true);

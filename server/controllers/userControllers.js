@@ -199,13 +199,16 @@ let connection = mysql.createConnection({
   
       const deleteQueries = [
         'DELETE FROM usersroles WHERE userId = ?',
+        'DELETE lignebci FROM BCI join lignebci on BCI.bciId = lignebci.bciId where BCI.userId = ?',
+        'DELETE FROM notifications WHERE userId = ?',
         'DELETE FROM bci WHERE userId = ?',
         'DELETE FROM bdr WHERE userId = ?',
         'DELETE FROM bsr WHERE userId = ?',
         'DELETE FROM consommateurs WHERE userId = ?',
         'DELETE FROM directors WHERE userId = ?',
         'DELETE FROM asa WHERE userId = ?',
-        'DELETE FROM rsr WHERE userId = ?',
+        'DELETE FROM rsrs WHERE userId = ?',
+        'DELETE FROM magasiniers WHERE userId = ?',
         'DELETE FROM users WHERE userId = ?',
       ];
   
@@ -253,7 +256,7 @@ let connection = mysql.createConnection({
         (SELECT COUNT(*) FROM consommateurs WHERE userId = ?) AS consommateursCount,
         (SELECT COUNT(*) FROM directors WHERE userId = ?) AS directorsCount,
         (SELECT COUNT(*) FROM asa WHERE userId = ?) AS asaCount,
-        (SELECT COUNT(*) FROM rsr WHERE userId = ?) AS rsrCount
+        (SELECT COUNT(*) FROM rsrs WHERE userId = ?) AS rsrCount
     `;
   
     connection.query(checkTracesQuery, [userId, userId, userId, userId, userId, userId, userId], (err, results) => {

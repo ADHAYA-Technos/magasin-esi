@@ -1,23 +1,28 @@
 import multer, { diskStorage } from 'multer';
 import { extname } from 'path';
 
-// Define storage settings for multer to use
+// Define storage settings for attachments
 const storage = diskStorage({
-	// Set destination folder for uploaded files
-	destination: function (req, file, cb) {
-		cb(null, './uploads/attachments');
-	},
-	// Rename uploaded files to have a unique name with original extension
-	filename: function (req, file, cb) {
-		cb(null, file.fieldname + '-' + Date.now() + extname(file.originalname));
-	}
+    destination: function (req, file, cb) {
+        cb(null, './uploads/attachments');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + extname(file.originalname));
+    }
 });
 
-// Initialize multer with defined storage settings
-// Initialize upload
-const upload = multer({
-    storage: storage
-  });  
+// Define storage settings for pictures
+const storagePicture = diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/pictures');
+    },
+    filename: function (req, file, cb) {
+        cb(null, file.fieldname + '-' + Date.now() + extname(file.originalname));
+    }
+});
 
-export default upload;
-  
+// Create multer instances for each storage setting
+const uploadAttachment = multer({ storage: storage });
+const uploadPicture = multer({ storage: storagePicture });
+
+export { uploadAttachment, uploadPicture };

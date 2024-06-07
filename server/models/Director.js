@@ -3,7 +3,7 @@ import Database  from '../config/Database.js';
 
 
 const Director = Database.define(
-	'Director',
+	'Directors',
 	{
 		matricule: {
             type: DataTypes.STRING,

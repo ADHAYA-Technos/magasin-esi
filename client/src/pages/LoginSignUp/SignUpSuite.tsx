@@ -1,6 +1,6 @@
 
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PageIllustration from './PageIllustration.jsx';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
@@ -40,13 +40,30 @@ const SignUpSuite = () => {
     const [address, setAddress] = useState('');
     const [telephone, setPhone] = useState('');
     const [institution, setInstitution] = useState('ESI-SBA');
-    const [userType, setUserType] = useState('Consumer');
     const [service, setService] = useState('Administration');
-
+    const [userType, setUserType] = useState();
  
+    useEffect(() => {
+        const checkAuthentication = async () => {
+          try {
+            const response = await axios({
+              method: 'GET',
+              url: 'http://localhost:3000/check-authentication',
+              withCredentials: true,
+            });
+            console.warn(response.data.user);
+            setUserType(response.data.user.userType);
+          } catch (err) {
+         
+          }
+        };
+        checkAuthentication();
+      }, []);
     const handleSignUp = async (e) => {
+      
+
         e.preventDefault();
-        if (userType === 'Consumer') {
+        
             if (matricule && address && telephone && institution) {
                 try {
                     const response = await axios({
@@ -57,7 +74,7 @@ const SignUpSuite = () => {
                             address,
                             telephone,
                             service,
-                            userType: 'consommateur',
+                            userType
                         },
                         withCredentials: true,
                     });
@@ -69,7 +86,7 @@ const SignUpSuite = () => {
             } else {
                 alert('Please fill in all fields!');
             }
-        }
+        
     };
 
     return (
