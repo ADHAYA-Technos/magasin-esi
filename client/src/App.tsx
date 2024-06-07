@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import MainLayout from "./components/layout/MainLayout.tsx";
+import { ASAROUTES, MAGASINIERROUTES, ADMINROUTES,CONSOMATEUR,RSR,DIRECTOR,CHFEFSERVICE } from "./routes/index.tsx";
 import LoginSignUp from "./pages/LoginSignUp/LoginSignUp.tsx";
 import EmailConfirmation from "./pages/LoginSignUp/emailConfirmation.tsx";
 import SignUpSuite from "./pages/LoginSignUp/SignUpSuite.tsx";
-import { ASAROUTES, MAGASINIERROUTES, RSR, DIRECTOR, CONSOMATEUR, ADMINROUTES } from "./routes/index.tsx";
 import axios from "axios";
 import PageIllustration from "./pages/LoginSignUp/PageIllustration.jsx";
 import { LinearProgress, Stack } from "@mui/material";
 import ResetPassword from "./pages/LoginSignUp/ResetPassword.tsx";
+
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -60,6 +61,26 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+
+        <Route path="/emailConfirmation" element={<EmailConfirmation />}/>
+
+          
+
+        <Route path="/login" element={<LoginSignUp />}/>
+
+       <Route path="/" element={<MainLayout />}>
+       
+          {ASAROUTES}
+
+          {CONSOMATEUR}
+          {RSR}
+          {DIRECTOR}
+
+          {MAGASINIERROUTES}
+          
+          {CHFEFSERVICE}
+        </Route>
+       
         <Route path="/verify-email" element={<EmailConfirmation />} />
       <Route path="/SignUpSuite" element={<SignUpSuite />} />
         <Route path="/reset-password" element={<ResetPassword />} />
@@ -75,6 +96,7 @@ function App() {
           </Route>
         ) : (
           <Route path="/" element={<LoginSignUp />} />
+
         )}
       </Routes>
     </BrowserRouter>

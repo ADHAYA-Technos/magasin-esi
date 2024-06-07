@@ -68,8 +68,7 @@ const BRManagement: React.FC = () => {
   };
   //BR SELECTION CHANGE HANDLER
   const handleBRSelectionChange = (newSelection: GridRowId[]) => {
-    setSelectedBRRows(bonsRec.filter(bon => newSelection.includes(bon.id))); 
-    
+    setSelectedBRRows(newSelection[0]); 
   };
   
     //BCE SELECTION CHANGE HANDLER

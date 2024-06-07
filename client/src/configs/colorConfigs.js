@@ -2,13 +2,13 @@ import { colors } from "@mui/material";
 
 const colorConfigs = {
   sidebar: {
-    bg: "#2c3e50", // Dark blue-gray background for the sidebar
+    bg: "#051D40", // Dark blue-gray background for the sidebar
     color: "#ffffff", // White text color for sidebar items
-    hoverBg: "#34495e", // Slightly darker background color on hover
-    activeBg: "#95a5a6" // Light gray color for active sidebar item
+    hoverBg: "#09326f", // Slightly darker background color on hover
+    activeBg: "#09326f" // Light gray color for active sidebar item
   },
   topbar: {
-    bg: "#95a5a6", // Turquoise background for the topbar
+    bg: "#0b3d87", // Turquoise background for the topbar
     color: "#ffffff", // White text color for topbar items
     divider: "#bdc3c7" // Light gray color for divider
   },
