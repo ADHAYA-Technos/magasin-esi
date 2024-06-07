@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import { Autocomplete, TextField } from '@mui/material';
 
 interface Props {
   selectedRowIds: number[];
@@ -186,7 +187,10 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
   };
 
   const handleAddRow = () => {
-
+      if(orderRecipient.article === '' || orderRecipient.chapitre === '' || orderRecipient.fournisseur === '') {
+        alert('Please select Chapitre, Article and Fournisseur before adding a new row.');
+        return;
+      }
     if (orderRecipient.products.length === unselectedProducts.length ) {
       alert('You have already added all available products for this article.');
       return;
@@ -384,76 +388,86 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
         </select>
       </div>
       <div className="mb-6">
-        <label className="block text-gray-700 text-sm font-bold mb-2">Fournisseur:</label>
-        <select
-          value={orderRecipient.fournisseur}
-          onChange={handleFournisseurChange}
-          className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-        >
-          {filteredFournisseurs.map((fournisseur) => (
-            <option key={fournisseur.fournisseurId} value={fournisseur.fournisseurId}>
-              {fournisseur.raisonSociale}
-            </option>
-          ))}
-        </select>
-        <input
-          type="text"
-          placeholder="Search fournisseur"
-          value={searchTerm}
-          onChange={handleSearchTermChange}
-          className="w-full mt-2 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-        />
-      </div>
+            <label className="block text-gray-700 text-sm font-bold mb-2">Fournisseur:</label>
+            <Autocomplete
+              options={filteredFournisseurs}
+              getOptionLabel={(option) => option.raisonSociale}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label="Fournisseur"
+                  variant="outlined"
+                  onChange={handleSearchTermChange}
+                />
+              )}
+              value={fournisseurs.find(
+                (fournisseur) => fournisseur.fournisseurId === orderRecipient.fournisseur
+              )}
+              onChange={handleFournisseurChange}
+              disableClearable
+            />
+          
+          </div>
+
+     
+      {orderRecipient.products.map((product, index) => (
+        <div key={index} className="flex flex-row gap-3 mb-3 rounded-md backdrop-blur-md backdrop-brightness-80 bg-slate-50">
+          
+          <Autocomplete
+                  className="basis-3/6"
+                    options={unselectedProducts[index]}
+                    getOptionLabel={(option) => option.designation}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Product" variant="outlined" />
+                    )}
+                    value={unselectedProducts[index].find(
+                      (prod) => prod.productId === product.productId
+                    )}
+                    onChange={(event, newValue) =>
+                      handleProductChange(index, { target: { value: newValue?.productId } })
+                    }
+                    disableClearable
+                    isOptionEqualToValue={(option, value) => option.productId === value.productId}
+                  />
+            
+          <TextField
+             
+            
+            label="Price"
+            type="number"
+            InputProps={{
+              inputProps: {
+                min: 0}}}
+            value={orderRecipient.prices[index]}
+            onChange={(event) => handlePriceChange(index, event)}
+            className="basis-1/6 px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
+          />
+            
+          <TextField
+          label="Quantity"
+            type="number"
+            InputProps={{
+              inputProps: {
+                min: 0}}}
+            value={orderRecipient.quantities[index]}
+            onChange={(event) => handleQuantityChange(index, event)}
+            className="basis-1/6  px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
+          />
+         <button
+            onClick={() => handleDeleteRow(index)}
+            className=" basis-1/6 justify-self-stretch bg-red-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300 mr-10"
+          >
+            Delete
+          </button>
+        </div>
+      ))}
+      <div className=" flex flex-row my-4 justify-end">
       <button
         className="bg-gray-800 text-white py-2 px-6 rounded-md shadow-md hover:bg-gray-700 focus:outline-none focus:ring focus:ring-gray-300 mr-4"
         onClick={handleAddRow}
       >
         Add Row
       </button>
-      {orderRecipient.products.map((product, index) => (
-        <div key={index} className="mb-6">
-          <button
-            onClick={() => handleDeleteRow(index)}
-            className="bg-red-500 text-white py-2 px-4 rounded-md shadow-md hover:bg-red-600 focus:outline-none focus:ring focus:ring-red-300 mr-6"
-          >
-            Delete
-          </button>
-          <label className="block text-gray-700 text-sm font-bold mb-2">Product:</label>
-          <select
-            value={product.productId}
-            onChange={(event) => handleProductChange(index, event)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-          >
-            <option value="">Select a product</option>
-            {unselectedProducts[index].map((unselectedProduct) => (
-              <option
-                key={unselectedProduct.productId}
-                value={unselectedProduct.productId}
-                disabled={orderRecipient.products.some(
-                  (selectedProduct) => selectedProduct.productId === unselectedProduct.productId
-                )}
-              >
-                {unselectedProduct.designation}
-              </option>
-            ))}
-          </select>
-          <label className="block text-gray-700 text-sm font-bold mt-4 mb-2">Price:</label>
-          <input
-            type="number"
-            value={orderRecipient.prices[index]}
-            onChange={(event) => handlePriceChange(index, event)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-          />
-          <label className="block text-gray-700 text-sm font-bold mt-4 mb-2">Quantity:</label>
-          <input
-            type="number"
-            value={orderRecipient.quantities[index]}
-            onChange={(event) => handleQuantityChange(index, event)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200"
-          />
-         
-        </div>
-      ))}
       <button
         className="bg-blue-500 text-white py-2 px-6 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring focus:ring-blue-300 mr-4"
         onClick={handleConfirm}
@@ -466,6 +480,7 @@ const AddBCE: React.FC<Props> = ({ selectedRowIds, goBack }) => {
       >
         Go Back
       </button>
+      </div>
     </>
   );
 };

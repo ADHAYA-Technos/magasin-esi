@@ -1,7 +1,8 @@
-import User from "../models/userModel.js";
+import Users from "../models/User.js";
 
 // Middleware to verify if user is authenticated
 export const verifyUser = async (req, res, next) => {
+    console.log(req.session);
     // Check if userId exists in the session
     if (!req.session.userId) {
         return res.status(401).json({ msg: "Please login to your account!" });
@@ -9,7 +10,7 @@ export const verifyUser = async (req, res, next) => {
 
     try {
         // Find user by userId in the database
-        const user = await User.findOne({
+        const user = await Users.findOne({
             where: {
                 uuid: req.session.userId
             }
@@ -36,7 +37,7 @@ export const verifyUser = async (req, res, next) => {
 export const adminOnly = async (req, res, next) => {
     try {
         // Find user by userId in the database
-        const user = await User.findOne({
+        const user = await Users.findOne({
             where: {
                 uuid: req.session.userId
             }

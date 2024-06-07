@@ -2,10 +2,14 @@ import React, { useEffect, useState } from 'react';
 import assets from '../../assets';
 import axios from 'axios';
 import './LoginSignUp.css';
+import { useNavigate,useSearchParams } from 'react-router-dom';
 
+import PageIllustration from './PageIllustration.jsx';
+import PasswordReset from './PasswordReset.tsx';
 type Props = {};
 
 const LoginSignUp = (props: Props) => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -14,8 +18,23 @@ const LoginSignUp = (props: Props) => {
   const [isLogButtonDisabled, setIsLogButtonDisabled] = useState(false);
   const [isRegButtonDisabled, setIsRegButtonDisabled] = useState(true);
   const [action, setAction] = useState('Sign Up');
-
+  const [searchParams] = useSearchParams();
+  const [role,setRole] = useState('');
   useEffect(() => {
+
+    const verify = async () => {
+			const key = searchParams.get('key');
+			if (key) {
+				const response = await axios({
+					method: 'GET',
+					url: 'http://localhost:5000/verify-email?key=' + key,
+					withCredentials: true,
+				});
+				alert(response.data.message);
+				navigate('/SignUpSuite', { replace: true });
+			}
+		};
+		verify();
     if (
       action === 'Sign Up' &&
       email &&
@@ -27,7 +46,7 @@ const LoginSignUp = (props: Props) => {
       setIsRegButtonDisabled(false);
     } else if (action === 'Sign Up' && (!email || !password || !username)) {
       setIsLogButtonDisabled(false);
-      setIsRegButtonDisabled(true);
+      setIsRegButtonDisabled(false  );
     } else if (action === 'Log In' && email && password) {
       setIsRegButtonDisabled(false);
       setIsLogButtonDisabled(false);
@@ -36,24 +55,33 @@ const LoginSignUp = (props: Props) => {
       setIsLogButtonDisabled(true);
     }
   }, [email, username, password, action]);
-
+  const [open, setOpen] = React.useState(false);
+  const [resetPassword , setResetPassword] = useState(false);
+	const handleClose = () => setOpen(false);
   const handleLogin = async () => {
     try {
       console.log(email, password);
       const response = await axios.post('/login', { email, password });
-      const isAdmin = response.data.isAdmin;
-      if (isAdmin) {
-        // Redirect to admin dashboard
-        window.location.href = '/MainLayout';
-      } else {
-        window.location.href = '/';
+      console.warn(response);
+      
+      if(!response.data.isCompleted){
+      navigate("/SignUpSuite");
+
+      }else{
+          navigate("/");
+          window.location.reload();
       }
+          
+
     } catch (error) {
+      alert('Login failed: Invalid email or password');
       console.error('Login failed:', error);
       // Handle login failure
     }
   };
-
+  const handleResetClick = () => {
+    setResetPassword(true); 
+  };
   const handleLoginClick = () => {
     if (action === 'Log In') {
       handleLogin();
@@ -62,6 +90,9 @@ const LoginSignUp = (props: Props) => {
     }
   };
 
+  const handleGoBack = () => {
+    setResetPassword(false); 
+  };
   const handleRegisterClick = () => {
     if (action === 'Sign Up') {
       handleRegister();
@@ -73,19 +104,20 @@ const LoginSignUp = (props: Props) => {
   const handleRegister = async () => {
     try {
       // Check if email ends with @esi-sba.dz
-      if (!email.endsWith('@esi-sba.dz')) {
+      /*if (!email.endsWith('@esi-sba.dz')) {
         setRegistrationMessage('Please use a valid @esi-sba.dz email address.');
         return;
-      }
-      const response = await axios.post('/register', { username, email, password });
-      if (response.data.success) {
+      }*/
+      const response = await axios.post('/sign-up', { username, email, password ,userType:"administrator"});
+      if (response.data.userId) {
+        setOpen(true);
         setRegistrationSuccess(true);
         setRegistrationMessage(
-          'Registration successful! You will receive an email when your account is approved.'
+          'Registration successful! You will receive an email to verify your accounr.'
         );
         setUsername('');
         setPassword('');
-        window.location.href = '/emailConfirmation';
+        navigate('/verify-email', { replace: true });
       } else {
         setRegistrationMessage(
           'User already registered! Please log in, or wait for Admin confirmation'
@@ -101,7 +133,15 @@ const LoginSignUp = (props: Props) => {
     }
   };
 
-  return (
+  return (<>
+    {!resetPassword &&
+      <>
+         <div className="flex flex-col min-h-screen overflow-hidden antialiased bg-gray-900 text-gray-200 tracking-tight">
+            <main className="grow">
+                {/* Page illustration */}
+                <div className="relative max-w-6xl mx-auto h-0 pointer-events-none" aria-hidden="true">
+                    <PageIllustration />
+                </div>
     <div>
       <div>
         <div className="container">
@@ -150,7 +190,7 @@ const LoginSignUp = (props: Props) => {
             <div></div>
           ) : (
             <div className="forgot-password">
-              Lost Password ? <span>Click Here !</span>
+              Lost Password ? <span onClick={handleResetClick}>Click Here !</span>
             </div>
           )}
         </div>
@@ -177,6 +217,14 @@ const LoginSignUp = (props: Props) => {
         </div>
       )}
     </div>
+ 
+    </main>
+        </div>
+    </>
+    }
+    {resetPassword && <PasswordReset goBack={handleGoBack}/>}
+    </>
+  
   );
 };
 

@@ -1,12 +1,17 @@
 import { ReactNode } from "react";
 import { Route } from "react-router-dom";
 import PageWrapper from "../components/layout/PageWrapper.tsx";
-import adminRoutes from "./appRoutes.tsx";
 import serviceAchatsRoutes from "./asaRoutes.tsx";
 import consommateurRoutes from "./consommateurRoutes.tsx";
 import magasinierRoutes from "./magasinierRoutes.tsx";
+import rsrRoutes from "./rsrRoutes.tsx";
+import adminRoutes from "./adminRoutes.tsx";
+import directorRoutes from "./directorRoutes.tsx";
 import { RouteType } from "./config";
-import React from "react";
+import  chef_serviceRoutes from "./chef_serviceRoutes.tsx";
+
+
+import React, { useState, useEffect } from 'react';
 
 const generateRoute = (routes: RouteType[]): ReactNode => {
   return routes.map((route, index) => (
@@ -37,10 +42,13 @@ const generateRoute = (routes: RouteType[]): ReactNode => {
   ));
 };
 export const ASAROUTES: ReactNode = generateRoute(serviceAchatsRoutes);
-
-export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
-export const  CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
 export const ADMINROUTES: ReactNode = generateRoute(adminRoutes);
+export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
+export const  RSR: ReactNode = generateRoute(rsrRoutes);
+export const DIRECTOR: ReactNode = generateRoute(directorRoutes);
+export const CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
+export const CHFEFSERVICE: ReactNode = generateRoute(chef_serviceRoutes);
+
 
 
 

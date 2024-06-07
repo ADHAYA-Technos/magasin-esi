@@ -27,8 +27,10 @@ import ArticleManagement from "../service_achats/articleManagement.tsx";
 import BceManagement from "../service_achats/bceManagement.tsx";
 import React from "react";
 
+
 export const serviceAchatsRoutes: RouteType[] = [
     {
+    
       index: true,
       element: <HomePage />,
       state: "home"

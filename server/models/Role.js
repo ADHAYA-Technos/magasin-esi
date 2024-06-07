@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
 import Database from "../config/Database.js";
-import Users from "./userModel.js";
+import Permission from "./Permission.js";
 const { DataTypes } = Sequelize;
 
  const Roles = Database.define('Roles', { // Use 'Roles' instead of 'Users' for defining the model
@@ -8,6 +8,7 @@ const { DataTypes } = Sequelize;
         type: DataTypes.UUID,
         defaultValue: DataTypes.UUIDV4,
         allowNull: false,
+        primaryKey: true, 
         validate: {
             notEmpty: true,
         }
@@ -19,21 +20,32 @@ const { DataTypes } = Sequelize;
             notEmpty: true,
             len: [3, 100]
         }
+    },
+    color: {
+        type: DataTypes.STRING,
+        allowNull: false,
     }
 }, {
-    freezeTableName: true
+    timestamps: false
 });
 
-Roles.belongsToMany(Users, { 
-    through: 'UsersRoles', // Intermediate table name
-    foreignKey: 'roleId', // Foreign key in the intermediate table referring to Roles
-    otherKey: 'userId' // Foreign key in the intermediate table referring to Users
+
+const PermissionsRoles = Database.define('PermissionsRoles', {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+
+    },
+    roleId: {
+        type: DataTypes.UUID,
+        allowNull: false,
+    }
+}, {
+    timestamps: false,
 });
 
-Users.belongsToMany(Roles, { 
-    through: 'UsersRoles', // Intermediate table name
-    foreignKey: 'userId', // Foreign key in the intermediate table referring to Users
-    otherKey: 'roleId' // Foreign key in the intermediate table referring to Roles
-});
+
+Roles.belongsToMany(Permission, { through: 'PermissionsRoles', foreignKey: 'roleId' });
+Permission.belongsToMany(Roles, { through: 'PermissionsRoles', foreignKey: 'id' });
 
 export default Roles;

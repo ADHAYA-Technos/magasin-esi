@@ -1,6 +1,6 @@
-import Users from "../models/userModel.js";
-import UserRole from "../models/userRoleModel.js"; // Assuming you have a UserRoles model
-import Roles from "../models/roleModel.js"; // Assuming you have a Role model
+import Users from "../models/User.js";
+import UsersRoles from "../models/UserRoles.js"; // Assuming you have a UserRoles model
+import Roles from "../models/Role.js"; // Assuming you have a Role model
 import argon2 from "argon2";
 
 // Controller for user authentication
@@ -22,11 +22,16 @@ const AuthController = {
       // Verify password
       const match = await argon2.verify(user.password, req.body.password);
       if (!match) {
+        console.log("User:", user);
+        console.log("Password match:", match);
         return res.status(400).json({ msg: "Wrong password" });
+        
       }
+    
+
 
       // Find roles associated with the user
-      const userRoles = await UserRole.findAll({
+      const userRoles = await UsersRoles.findAll({
         where: {
           userId: user.userId
         },
@@ -34,7 +39,7 @@ const AuthController = {
       });
 
       // Extract role names from userRoles
-      const roles = userRoles.map(userRole => userRole.role.name);
+      const roles = userRoles.map(userRole => userRole.role);
 
       // Set session userId
       req.session.userId = user.uuid;

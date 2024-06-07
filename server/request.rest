@@ -1,0 +1,7 @@
+POST http://localhost:5000/check-authentication HTTP/1.1
+Content-Type: application/json
+
+{
+    "email": "yacinmca32000@gmail.com",
+    "password": "password123"
+}
