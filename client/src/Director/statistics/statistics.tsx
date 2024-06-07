@@ -65,7 +65,7 @@ const ConsomateurComponent = () => {
 
       <Box sx={{ display: 'flex', gap: 2 }}>
         {/* Search Field */}
-        <TextField fullWidth label="Recharche" id="rech" />
+        <TextField fullWidth label="Rechercher" id="rech" />
 
         {/* Select Button */}
         <FormControl sx={{ minWidth: 365 }}>
@@ -156,7 +156,7 @@ const ServerComponent = () => {
 
       <Box sx={{ display: 'flex', gap: 2 }}>
         {/* Search Field */}
-        <TextField fullWidth label="Recharche" id="rech" />
+        <TextField fullWidth label="Rechercher" id="rech" />
 
         {/* Select Button */}
         <FormControl sx={{ minWidth: 365 }}>

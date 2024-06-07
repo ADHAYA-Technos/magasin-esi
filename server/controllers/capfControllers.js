@@ -605,9 +605,6 @@ export const fetchBonRec = (bonId) => {
   });
 };
 
-<<<<<<< HEAD
-export default {fetchChapitres, fetchArticlesByChapitre ,fetchFournisseurs,fetchProductsByArticle , createBon ,updateBon, createCommandeRows,fetchBonsWithDetails,deleteBons ,fetchCommandesByBon,createChapitre,updateChapitre,deleteChapitre,updateArticle,createArticle,deleteArticle,deleteProduct,updateProduct,addProduct,fetchBonRec,createReceptionRows};
-=======
 export const deleteBonRec = (bonIds) => {
   return new Promise((resolve, reject) => {
     if (!bonIds || bonIds.length === 0) {
@@ -986,4 +983,3 @@ export default {
   fetchLigneBCIByBonRec,
   deleteBCIs,
 };
->>>>>>> b7251637c6066ae49fcaa76a0459a4538c6a7aef
