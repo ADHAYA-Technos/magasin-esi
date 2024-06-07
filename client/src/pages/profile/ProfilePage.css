@@ -47,13 +47,13 @@
   padding-bottom: 0.5rem;
   font-size: 1rem;
   font-weight: 500;
-  color: purple;
+  color: #0b3d87;
   border-bottom: 2px solid transparent;
 }
 
 .nav .active {
   font-weight: 700;
-  border-bottom: 2px solid purple;
+  border-bottom: 2px solid #0b3d87;
 }
 
 .grid {
