@@ -1094,7 +1094,7 @@ export const getMostConsumedProductInPeriod = (service, startDate, endDate, call
     FROM Products p
     JOIN lignebci l ON p.productId = l.productId
     JOIN BCI b ON l.bciId = b.bciId
-    JOIN User u ON b.userId = u.userId
+    JOIN Users u ON b.userId = u.userId
     WHERE u.service = ? AND b.dateCreation BETWEEN ? AND ?
     GROUP BY p.designation
     ORDER BY totalQuantity DESC
@@ -1105,6 +1105,7 @@ export const getMostConsumedProductInPeriod = (service, startDate, endDate, call
       if (!error) {
         callback(null, results);
       } else {
+        console.log(error)
         callback(error);
       }
     }
@@ -1175,8 +1176,22 @@ export const updateInventory = (products, callback) => {
   executeQueries();
 };
 
+export const fetchConsommateurs = (callback) => {
+  connection.query(
+    "SELECT userId,name FROM Users",
+    (error, results) => {
+      if (!error) {
+        callback(null, results);
+      } else {
+        callback(error);
+      }
+    }
+  );
+};
+
 
 export default {updateBCIRRows,
+  fetchConsommateurs,
   updateInventory,
   getProductsByArticle,
   getDistinctServices ,

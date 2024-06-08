@@ -8,7 +8,6 @@ import rsrRoutes from "./rsrRoutes.tsx";
 import adminRoutes from "./adminRoutes.tsx";
 import directorRoutes from "./directorRoutes.tsx";
 import { RouteType } from "./config";
-import  chef_serviceRoutes from "./chef_serviceRoutes.tsx";
 
 
 import React, { useState, useEffect } from 'react';
@@ -47,7 +46,6 @@ export const MAGASINIERROUTES: ReactNode = generateRoute(magasinierRoutes);
 export const  RSR: ReactNode = generateRoute(rsrRoutes);
 export const DIRECTOR: ReactNode = generateRoute(directorRoutes);
 export const CONSOMATEUR: ReactNode = generateRoute(consommateurRoutes);
-export const CHFEFSERVICE: ReactNode = generateRoute(chef_serviceRoutes);
 
 
 

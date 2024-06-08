@@ -58,7 +58,8 @@ import {
   getConsommateurWithMostBCIs,
   getMostConsumedProductInPeriod,
   getDistinctServices,
-  updateInventory
+  updateInventory,
+  fetchConsommateurs
 } from './controllers/capfControllers.js';
 
 dotenv.config();
@@ -808,6 +809,24 @@ app.post('/api/updateInventory', async (req, res) => {
     console.error('Error updating inventory:', error.message);
     res.status(500).json({ error: 'Failed to update inventory' });
   }
+});
+
+app.get('/consommateurs', async (req, res) => {
+  try {
+    fetchConsommateurs((error, consommateurs) => {
+      if (!error) {
+     
+        res.json(consommateurs);
+      } else {
+        console.error('Error fetching bons:', error);
+        res.status(500).json({ error: 'Internal server error' });
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching bons:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+     
 });
 app.listen(port, () => {
   console.log(`Example app listening on ports ${port}`)

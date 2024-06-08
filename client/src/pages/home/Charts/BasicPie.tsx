@@ -24,7 +24,9 @@ export default function BasicPie() {
   };
 
   return (
+   
     <PieChart
+   
       series={[{ data: productData }]}
       width={500}
       height={200}

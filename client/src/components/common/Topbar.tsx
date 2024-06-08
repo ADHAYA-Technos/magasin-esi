@@ -64,7 +64,7 @@ const Topbar = () => {
             sx={{ mr: 1, width: 32, height: 32 }}
           />
           <Typography variant="body1" sx={{ mr: 1, fontWeight: 500 }}>
-            John Doe
+            {user.name}
           </Typography>
           
           <NotificationButton notifications={notifications} />

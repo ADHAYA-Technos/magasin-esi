@@ -26,46 +26,7 @@ export const rsrRoutes: RouteType[] = [
     state: "home",
   },
 
-  {
-    path: "/dashboard",
-    element: <DashboardPageLayout />,
-    state: "dashboard",
-    sidebarProps: {
-      displayText: "Dashboard",
-      icon: <DashboardOutlinedIcon />,
-    },
-    child: [
-      {
-        index: true,
-        element: <DashboardIndex />,
-        state: "dashboard.index",
-      },
-      {
-        path: "/dashboard/default",
-        element: <DefaultPage />,
-        state: "dashboard.default",
-        sidebarProps: {
-          displayText: "Default",
-        },
-      },
-      {
-        path: "/dashboard/analytics",
-        element: <AnalyticsPage />,
-        state: "dashboard.analytics",
-        sidebarProps: {
-          displayText: "Analytic",
-        },
-      },
-      {
-        path: "/dashboard/saas",
-        element: <SaasPage />,
-        state: "dashboard.saas",
-        sidebarProps: {
-          displayText: "Saas",
-        },
-      },
-    ],
-  },
+  
   {
     path: "/rbcivalidation",
     element: <BciManagement />,
@@ -83,16 +44,8 @@ export const rsrRoutes: RouteType[] = [
       displayText: "Profile Settings",
       icon: <PersonIcon />,
     },
-  },
-  {
-    path: "/documentation",
-    element: <DocumentationPage />,
-    state: "documentation",
-    sidebarProps: {
-      displayText: "Documentation",
-      icon: <ArticleOutlinedIcon />,
-    },
-  },
+  }
+  
 ];
 
 export default rsrRoutes;

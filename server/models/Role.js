@@ -23,7 +23,7 @@ const { DataTypes } = Sequelize;
     },
     color: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
     }
 }, {
     timestamps: false

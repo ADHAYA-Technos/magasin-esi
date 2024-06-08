@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { IconButton, Badge } from '@mui/material';
+import { IconButton, Badge , Avatar } from '@mui/material';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import './NotificationButton.css'; // Import the CSS file for styling
 
@@ -47,10 +47,11 @@ const NotificationButton = ({ notifications }) => {
               className="notification-item"
               onClick={() => handleNotificationClick(notification.id)} // Add click handler
             >
-              <img
-                src={process.env.PUBLIC_URL + `/img/${notification.avatar}`}
-                alt="Avatar"
-              />
+               <Avatar
+            alt="Profile Picture"
+            src="https://st2.depositphotos.com/3369547/12123/v/950/depositphotos_121230246-stock-illustration-man-male-avatar-suit-person.jpg"
+            sx={{ mr: 1, width: 32, height: 32 }}
+          />
               <div className="notification-text">
                 <strong>{notification.name}</strong>
                 <p>{notification.message}</p>

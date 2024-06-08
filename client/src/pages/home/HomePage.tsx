@@ -39,7 +39,7 @@ const HomePage = () => {
     {roles.includes('director') && <>
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div>
-        <h1 style={{ textAlign: "center" }}>Director Home Page</h1>
+        <h1 style={{ textAlign: "center" }}></h1>
         <LineChart />
       </div>
       <div style={{ display: "flex", flexDirection: "row", gap: 10 }}>

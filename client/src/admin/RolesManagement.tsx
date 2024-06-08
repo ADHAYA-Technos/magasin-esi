@@ -160,7 +160,7 @@ const RolesManage = () => {
 /*** PERMISSION COMPONENT ***/
 
 const Permission = ({ title, description, isOpen }) => {
-    const [checked, setChecked] = useState(isOpen);
+    const [checked, setChecked] = useState(true);
 
     const handleChange = (event) => {
         setChecked(event.target.checked);
