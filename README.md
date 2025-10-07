@@ -45,6 +45,8 @@ This repository contains the source code for the ES3 application, built to meet 
 - **Responsable de la Structure de Rattachement (RSR)**: Validates internal orders.
 - **Directeur**: Approves internal orders.
 - **Consommateur**: Submits supply requests (e.g., students, teachers, employees).
+![Actors Diagram](https://github.com/ADHAYA-Technos/magasin-esi/blob/main/ES3_Actors.jpg)
+  - **Description**: ES3 Actors Diagram
 
 ## Technologies Used
 - **Backend**: Node.js (event-driven JavaScript runtime for network applications).
